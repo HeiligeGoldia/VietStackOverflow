@@ -1,25 +1,46 @@
 package com.se.kltn.vietstack.service;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
 import com.se.kltn.vietstack.model.Account;
-import com.se.kltn.vietstack.repository.AccountRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.twilio.Twilio;
+import com.twilio.rest.verify.v2.service.Verification;
+import com.twilio.rest.verify.v2.service.VerificationCheck;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AccountService {
 
-    @Autowired
-    AccountRepository accountRepository;
+    FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    public boolean checkEmail(String email){
-        if(accountRepository.checkEmail(email)==null){
-            return true;
-        }
-        else return false;
+    public String register1(String email) throws FirebaseAuthException {
+        Twilio.init("AC96e6a911a4dbdeb1ba8e7d5aaabedd76", "a46fcbb8d7640d91183e38d5e8e0a73d");
+        Verification verification = Verification.creator(
+                        "VA9a5636ec411f18ae4d68159a9c9518e9",
+                email,"email").create();
+        return "email sent";
     }
 
-    public void createAccount(Account account){
-        accountRepository.createAccount(account.getEmail(), account.getPassword(), account.getUid());
+    public String register2(String email, String otp){
+        VerificationCheck verificationCheck = VerificationCheck.creator("VA9a5636ec411f18ae4d68159a9c9518e9", otp)
+                .setTo(email)
+                .create();
+        if(verificationCheck.getStatus().equals("approved")){
+            return "Approved";
+        }
+        else {
+            return "OTP invalid";
+        }
+    }
+
+    public String create(Account account) throws FirebaseAuthException {
+        UserRecord.CreateRequest ur = new UserRecord.CreateRequest();
+        ur.setEmail(account.getEmail());
+        ur.setPassword(account.getPassword());
+        String id = auth.createUser(ur).getUid();
+        return id;
     }
 
 }
