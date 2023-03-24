@@ -2,7 +2,6 @@ package com.se.kltn.vietstack.service;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.se.kltn.vietstack.model.Account;
 import com.twilio.Twilio;

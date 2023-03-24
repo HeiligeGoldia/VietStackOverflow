@@ -32,7 +32,7 @@ public class AccountController {
         }
     }
 
-    @PostMapping("register/{otp}")
+    @PostMapping("/register/{otp}")
     public String register2(@RequestBody AccountUserDTO au, @PathVariable("otp") String otp) throws FirebaseAuthException, ExecutionException, InterruptedException {
         System.out.println(au);
         Account account = au.getAccount();
