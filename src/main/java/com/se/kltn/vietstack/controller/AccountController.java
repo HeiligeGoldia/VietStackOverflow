@@ -34,11 +34,8 @@ public class AccountController {
 
     @PostMapping("/register/{otp}")
     public String register2(@RequestBody AccountUserDTO au, @PathVariable("otp") String otp) throws FirebaseAuthException, ExecutionException, InterruptedException {
-        System.out.println(au);
         Account account = au.getAccount();
-        System.out.println(account);
         User user = au.getUser();
-        System.out.println(user);
         String stt = accountService.register2(account.getEmail(), otp);
         if(stt.equals("Approved")){
             String id = accountService.create(account);
@@ -49,6 +46,17 @@ public class AccountController {
             return id;
         }
         else return stt;
+    }
+
+    @PostMapping("/createSessionCookie")
+    public String createSessionCookie(@RequestBody String token) throws FirebaseAuthException {
+        return accountService.createSessionCookie(token);
+//        fix loi do cac session da duoc tao tu truoc
+    }
+
+    @PostMapping("/test")
+    public String test(@RequestBody String cookie) throws FirebaseAuthException {
+        return accountService.test(cookie);
     }
 
 }
