@@ -30,4 +30,16 @@ public class UserService {
         return user;
     }
 
+    public User findByUid(String uid) throws ExecutionException, InterruptedException {
+        User user;
+        DocumentReference ref = db.collection("User").document(uid);
+        ApiFuture<DocumentSnapshot> api = ref.get();
+        DocumentSnapshot doc = api.get();
+        if(doc.exists()){
+            user = doc.toObject(User.class);
+            return user;
+        }
+        return new User();
+    }
+
 }

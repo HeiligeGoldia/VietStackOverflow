@@ -49,14 +49,13 @@ public class AccountController {
     }
 
     @PostMapping("/createSessionCookie")
-    public String createSessionCookie(@RequestBody String token) throws FirebaseAuthException {
+    public String createSessionCookie(@RequestBody String token) {
         return accountService.createSessionCookie(token);
-//        fix loi do cac session da duoc tao tu truoc
     }
 
     @PostMapping("/test")
-    public String test(@RequestBody String cookie) throws FirebaseAuthException {
-        return accountService.test(cookie);
+    public User test(@CookieValue("sessionCookie") String ck) {
+        return accountService.verifySC(ck);
     }
 
 }

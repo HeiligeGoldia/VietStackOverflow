@@ -1,17 +1,26 @@
 package com.se.kltn.vietstack.service;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
 import com.google.firebase.auth.*;
+import com.google.firebase.cloud.FirestoreClient;
 import com.se.kltn.vietstack.model.Account;
+import com.se.kltn.vietstack.model.User;
 import com.twilio.Twilio;
 import com.twilio.rest.verify.v2.service.Verification;
 import com.twilio.rest.verify.v2.service.VerificationCheck;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class AccountService {
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
+    Firestore db = FirestoreClient.getFirestore();
 
     public String register1(String email) throws FirebaseAuthException {
         Twilio.init("AC96e6a911a4dbdeb1ba8e7d5aaabedd76", "a46fcbb8d7640d91183e38d5e8e0a73d");
@@ -41,28 +50,60 @@ public class AccountService {
         return id;
     }
 
-    public String createSessionCookie(String token) throws FirebaseAuthException {
-        FirebaseToken decodedToken = auth.verifyIdToken(token);
-        long authTimeMillis = TimeUnit.SECONDS.toMillis((long) decodedToken.getClaims().get("auth_time"));
-        if (System.currentTimeMillis() - authTimeMillis < TimeUnit.MINUTES.toMillis(1)) {
-            long expiresIn = TimeUnit.DAYS.toMillis(13);
-            SessionCookieOptions options = SessionCookieOptions.builder()
-                    .setExpiresIn(expiresIn)
-                    .build();
-            return auth.createSessionCookie(token, options);
+    public String createSessionCookie(String token) {
+        try {
+            FirebaseToken decodedToken = auth.verifyIdToken(token);
+            long authTimeMillis = TimeUnit.SECONDS.toMillis((long) decodedToken.getClaims().get("auth_time"));
+            if (System.currentTimeMillis() - authTimeMillis < TimeUnit.MINUTES.toMillis(1)) {
+                long expiresIn = 1123200000;
+                SessionCookieOptions options = SessionCookieOptions.builder()
+                        .setExpiresIn(expiresIn)
+                        .build();
+                return auth.createSessionCookie(token, options);
+            }
+            else return "session time out";
+        } catch (FirebaseAuthException e) {
+            return "token invalid";
         }
-        else return "session time out";
     }
 
-    public String test(String ss) throws FirebaseAuthException {
-        return auth.verifySessionCookie(ss, true).getUid();
-//      them truong hop co loi
+    public User verifySC(String ss) {
+        User user;
+        try{
+            FirebaseToken tk = auth.verifySessionCookie(ss, true);
+            DocumentReference ref = db.collection("User").document(tk.getUid());
+            ApiFuture<DocumentSnapshot> api = ref.get();
+            DocumentSnapshot doc = api.get();
+            if(doc.exists()){
+                user = doc.toObject(User.class);
+                return user;
+            }
+            return new User();
+        } catch (FirebaseAuthException e) {
+            return new User();
+        } catch (ExecutionException e) {
+            return new User();
+        } catch (InterruptedException e) {
+            return new User();
+        }
     }
 
-    public String clearSessionCookieAndRevoke(String cookie) throws FirebaseAuthException {
-        FirebaseToken decodedToken = auth.verifySessionCookie(cookie);
-        auth.revokeRefreshTokens(decodedToken.getUid());
-        return "revoked";
-//      them truong hop co loi
+    public String clearSessionCookieById(String uid) {
+        try {
+            auth.revokeRefreshTokens(uid);
+            return "revoked";
+        } catch (FirebaseAuthException e) {
+            return "session cookie invalid";
+        }
+    }
+
+    public String clearSessionCookieAndRevoke(String cookie) {
+        try {
+            FirebaseToken decodedToken = auth.verifySessionCookie(cookie);
+            auth.revokeRefreshTokens(decodedToken.getUid());
+            return "revoked";
+        } catch (FirebaseAuthException e) {
+            return "session cookie invalid";
+        }
     }
 }
