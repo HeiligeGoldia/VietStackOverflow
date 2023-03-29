@@ -1,4 +1,4 @@
-package com.se.kltn.vietstack.model;
+package com.se.kltn.vietstack.model.tag;
 
 import lombok.Data;
 

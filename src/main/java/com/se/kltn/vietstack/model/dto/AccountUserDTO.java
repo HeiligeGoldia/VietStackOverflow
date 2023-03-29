@@ -1,7 +1,7 @@
 package com.se.kltn.vietstack.model.dto;
 
-import com.se.kltn.vietstack.model.Account;
-import com.se.kltn.vietstack.model.User;
+import com.se.kltn.vietstack.model.user.Account;
+import com.se.kltn.vietstack.model.user.User;
 import lombok.Data;
 
 @Data

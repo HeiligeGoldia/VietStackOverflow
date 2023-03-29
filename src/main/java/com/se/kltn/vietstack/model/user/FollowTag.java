@@ -1,4 +1,4 @@
-package com.se.kltn.vietstack.model;
+package com.se.kltn.vietstack.model.user;
 
 import lombok.Data;
 

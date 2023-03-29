@@ -1,6 +1,6 @@
 package com.se.kltn.vietstack.controller;
 
-import com.se.kltn.vietstack.model.Question;
+import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,7 @@ public class QuestionController {
     private QuestionService questionService;
 
     @PostMapping("/create")
-    public String test(@RequestBody Question question) throws ExecutionException, InterruptedException {
+    public String create(@RequestBody Question question) throws ExecutionException, InterruptedException {
         return questionService.create(question);
     }
 

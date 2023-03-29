@@ -1,8 +1,8 @@
 package com.se.kltn.vietstack.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
-import com.se.kltn.vietstack.model.Account;
-import com.se.kltn.vietstack.model.User;
+import com.se.kltn.vietstack.model.user.Account;
+import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.model.dto.AccountUserDTO;
 import com.se.kltn.vietstack.service.AccountService;
 import com.se.kltn.vietstack.service.UserService;
