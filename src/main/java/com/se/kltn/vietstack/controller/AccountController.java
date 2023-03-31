@@ -7,6 +7,8 @@ import com.se.kltn.vietstack.model.dto.AccountUserDTO;
 import com.se.kltn.vietstack.service.AccountService;
 import com.se.kltn.vietstack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.ExecutionException;
@@ -22,18 +24,18 @@ public class AccountController {
     private UserService userService;
 
     @PostMapping("/register")
-    public String register1(@RequestBody Account account) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    public ResponseEntity<String> register1(@RequestBody Account account) throws FirebaseAuthException, ExecutionException, InterruptedException {
         if(userService.checkEmail(account.getEmail())){
             accountService.register1(account.getEmail());
-            return "OTP sent";
+            return ResponseEntity.ok("OTP sent");
         }
         else {
-            return "Email already in use";
+            return ResponseEntity.ok("Email already in use");
         }
     }
 
     @PostMapping("/register/{otp}")
-    public String register2(@RequestBody AccountUserDTO au, @PathVariable("otp") String otp) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    public ResponseEntity<String> register2(@RequestBody AccountUserDTO au, @PathVariable("otp") String otp) throws FirebaseAuthException, ExecutionException, InterruptedException {
         Account account = au.getAccount();
         User user = au.getUser();
         String stt = accountService.register2(account.getEmail(), otp);
@@ -43,19 +45,36 @@ public class AccountController {
             user.setEmail(account.getEmail());
             user.setRole("User");
             userService.create(user);
-            return id;
+            return ResponseEntity.ok(id);
         }
-        else return stt;
+        else return ResponseEntity.ok(stt);
     }
 
     @PostMapping("/createSessionCookie")
-    public String createSessionCookie(@RequestBody String token) {
-        return accountService.createSessionCookie(token);
+    public ResponseEntity<String> createSessionCookie(@RequestBody String token) {
+        String s = accountService.createSessionCookie(token);
+        return ResponseEntity.ok(s);
     }
 
-    @PostMapping("/test")
-    public User test(@CookieValue("sessionCookie") String ck) {
-        return accountService.verifySC(ck);
+    @PostMapping("/verifySC")
+    public ResponseEntity<User> verifySC(@CookieValue("sessionCookie") String ck) {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
+        }
+        else return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/clearSessionCookieById/{uid}")
+    public ResponseEntity<String> clearSessionCookieById(@PathVariable("uid") String uid){
+        String s = accountService.clearSessionCookieById(uid);
+        return ResponseEntity.ok(s);
+    }
+
+    @PostMapping("/clearSessionCookieAndRevoke")
+    public ResponseEntity<String> clearSessionCookieAndRevoke(@CookieValue("sessionCookie") String ck){
+        String s = accountService.clearSessionCookieAndRevoke(ck);
+        return ResponseEntity.ok(s);
     }
 
 }
