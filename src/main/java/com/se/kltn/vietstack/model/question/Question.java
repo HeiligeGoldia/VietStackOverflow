@@ -9,6 +9,7 @@ public class Question {
 
     private String qid;
     private String uid;
+    private String title;
     private Date date;
     private String status;
 

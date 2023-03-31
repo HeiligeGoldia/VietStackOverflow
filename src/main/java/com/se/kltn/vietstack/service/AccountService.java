@@ -27,7 +27,7 @@ public class AccountService {
         Verification verification = Verification.creator(
                         "VA9a5636ec411f18ae4d68159a9c9518e9",
                 email,"email").create();
-        return "email sent";
+        return "Email sent";
     }
 
     public String register2(String email, String otp){
@@ -61,9 +61,9 @@ public class AccountService {
                         .build();
                 return auth.createSessionCookie(token, options);
             }
-            else return "session time out";
+            else return "Session time out";
         } catch (FirebaseAuthException e) {
-            return "token invalid";
+            return "Token invalid";
         }
     }
 
@@ -91,9 +91,9 @@ public class AccountService {
     public String clearSessionCookieById(String uid) {
         try {
             auth.revokeRefreshTokens(uid);
-            return "revoked";
+            return "Revoked";
         } catch (FirebaseAuthException e) {
-            return "session cookie invalid";
+            return "Session cookie invalid";
         }
     }
 
@@ -101,9 +101,9 @@ public class AccountService {
         try {
             FirebaseToken decodedToken = auth.verifySessionCookie(cookie);
             auth.revokeRefreshTokens(decodedToken.getUid());
-            return "revoked";
+            return "Revoked";
         } catch (FirebaseAuthException e) {
-            return "session cookie invalid";
+            return "Session cookie invalid";
         }
     }
 }

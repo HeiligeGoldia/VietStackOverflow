@@ -14,6 +14,8 @@ public class UserService {
 
     Firestore db = FirestoreClient.getFirestore();
 
+    //    ---------- User ----------
+
     public boolean checkEmail(String email) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("User");
         Query query = ref.whereEqualTo("Email", email);
@@ -41,5 +43,13 @@ public class UserService {
         }
         return new User();
     }
+
+    //    ---------- Save ----------
+
+
+
+    //    ---------- Follow Tag ----------
+
+
 
 }
