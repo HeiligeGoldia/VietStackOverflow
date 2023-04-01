@@ -11,7 +11,6 @@ public class Answer {
     private String qid;
     private String uid;
     private Date date;
-    private String detail;
     private String status;
 
 }

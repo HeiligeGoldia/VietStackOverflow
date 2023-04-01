@@ -1,9 +1,146 @@
 package com.se.kltn.vietstack.service;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
+import com.google.firebase.cloud.FirestoreClient;
+import com.se.kltn.vietstack.model.answer.Answer;
+import com.se.kltn.vietstack.model.answer.AnswerDetail;
+import com.se.kltn.vietstack.model.answer.AnswerVote;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class AnswerService {
+
+    Firestore db = FirestoreClient.getFirestore();
+
+    //    ---------- Answer ----------
+
+    public String getLastAid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Answer");
+        ApiFuture<QuerySnapshot> api = ref.get();
+        QuerySnapshot doc = api.get();
+        List<QueryDocumentSnapshot> docs = doc.getDocuments();
+        if(docs.size() == 0){
+            return "0";
+        }
+        else{
+            List<Integer> docId = new ArrayList<>();
+            for(QueryDocumentSnapshot ds : docs){
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            return String.valueOf(docId.get(docId.size()-1));
+        }
+    }
+
+    public Answer getAnswerByUidQid(String uid, String qid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Answer");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(Answer.class);
+        }
+        return new Answer();
+    }
+
+    public String createAnswer(Answer answer) throws ExecutionException, InterruptedException {
+        Answer a = getAnswerByUidQid(answer.getUid(), answer.getQid());
+        if(a.getAid()==null){
+            int newAid = Integer.parseInt(getLastAid()) + 1;
+            String aid = String.valueOf(newAid);
+            answer.setAid(aid);
+            ApiFuture<WriteResult> api = db.collection("Answer").document(answer.getAid()).set(answer);
+            api.get();
+            return answer.getAid();
+        }
+        else {
+            a.setDate(answer.getDate());
+            ApiFuture<WriteResult> api = db.collection("Answer").document(a.getAid()).set(a);
+            api.get();
+            return a.getAid();
+        }
+    }
+
+    public Answer getAnswerByAid(String aid) throws ExecutionException, InterruptedException {
+        Answer answer;
+        DocumentReference ref = db.collection("Answer").document(aid);
+        ApiFuture<DocumentSnapshot> api = ref.get();
+        DocumentSnapshot doc = api.get();
+        if(doc.exists()){
+            answer = doc.toObject(Answer.class);
+            return answer;
+        }
+        return new Answer();
+    }
+
+    public List<Answer> getAnswerByQid(String qid) throws ExecutionException, InterruptedException {
+        List<Answer> al = new ArrayList<>();
+        CollectionReference ref = db.collection("Answer");
+        Query query = ref.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs) {
+            al.add(ds.toObject(Answer.class));
+        }
+        return al;
+    }
+
+    //    ---------- Answer Detail ----------
+
+    public List<AnswerDetail> getAnswerDetailByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerDetail> adl = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerDetail");
+        Query query = ref.whereEqualTo("aid", aid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs) {
+            adl.add(ds.toObject(AnswerDetail.class));
+        }
+        return adl;
+    }
+
+    //    ---------- Answer Vote ----------
+
+    public String getLastVaid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerVote");
+        ApiFuture<QuerySnapshot> api = ref.get();
+        QuerySnapshot doc = api.get();
+        List<QueryDocumentSnapshot> docs = doc.getDocuments();
+        if(docs.size() == 0){
+            return "0";
+        }
+        else{
+            List<Integer> docId = new ArrayList<>();
+            for(QueryDocumentSnapshot ds : docs){
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            return String.valueOf(docId.get(docId.size()-1));
+        }
+    }
+
+    public AnswerVote getAnswerVoteByUidAid(String uid, String aid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerVote");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("aid", aid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(AnswerVote.class);
+        }
+        return new AnswerVote();
+    }
+
+    //    ---------- Answer Activity History ----------
+
+
+
+    //    ---------- Answer Report ----------
 
 
 

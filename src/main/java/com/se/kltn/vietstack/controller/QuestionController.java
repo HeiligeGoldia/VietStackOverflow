@@ -131,10 +131,22 @@ public class QuestionController {
         }
     }
 
-    @GetMapping("getTotalVoteValue/{qid}")
+    @GetMapping("/getTotalVoteValue/{qid}")
     public ResponseEntity<String> getTotalVoteValue(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         int i = questionService.getTotalVoteValue(qid);
         return ResponseEntity.ok(String.valueOf(i));
+    }
+
+    @GetMapping("/getUserVoteValue/{qid}")
+    public ResponseEntity<String> getUserVoteValue(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String val = questionService.getUserVoteValue(user.getUid(), qid);
+            return ResponseEntity.ok(val);
+        }
     }
 
     //    ---------- Question Activity History ----------

@@ -68,11 +68,13 @@ public class QuestionService {
     }
 
     public Question getQuestionByQid(String qid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("Question");
-        Query query = ref.whereEqualTo("qid", qid);
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        for (DocumentSnapshot d : querySnapshot.get().getDocuments()) {
-            return d.toObject(Question.class);
+        Question question;
+        DocumentReference ref = db.collection("Question").document(qid);
+        ApiFuture<DocumentSnapshot> api = ref.get();
+        DocumentSnapshot doc = api.get();
+        if(doc.exists()){
+            question = doc.toObject(Question.class);
+            return question;
         }
         return new Question();
     }
@@ -235,6 +237,16 @@ public class QuestionService {
             }
         }
         return totalValue;
+    }
+
+    public String getUserVoteValue(String uid, String qid) throws ExecutionException, InterruptedException {
+        QuestionVote qv = getQuestionVoteByUidQid(uid, qid);
+        if(qv.getVqid()==null) {
+            return "0";
+        }
+        else {
+            return qv.getValue();
+        }
     }
 
     //    ---------- Question Activity History ----------
