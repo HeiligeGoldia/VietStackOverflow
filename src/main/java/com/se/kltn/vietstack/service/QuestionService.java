@@ -79,6 +79,24 @@ public class QuestionService {
         return new Question();
     }
 
+    public String closeQuestion(String qid, Boolean aa) throws ExecutionException, InterruptedException {
+        Question q = getQuestionByQid(qid);
+        if(q.getStatus().equals("Open")){
+            if(aa){
+                q.setStatus("Closed");
+            }
+            else {
+                return "Can not close question without any answer accepted";
+            }
+        }
+        else if(q.getStatus().equals("Closed")) {
+            q.setStatus("Open");
+        }
+        ApiFuture<WriteResult> api = db.collection("Question").document(q.getQid()).set(q);
+        api.get();
+        return "Modified";
+    }
+
     //    ---------- Question Tag ----------
 
     public String getLastTqid() throws ExecutionException, InterruptedException {
@@ -204,7 +222,19 @@ public class QuestionService {
         return new QuestionVote();
     }
 
-    public String createQuestionVote(QuestionVote questionVote) throws ExecutionException, InterruptedException {
+    public String removeQuestionVote(QuestionVote questionVote) {
+        try{
+            ApiFuture<WriteResult> writeResult = db.collection("QuestionVote").document(questionVote.getVqid()).delete();
+            writeResult.get();
+            return "Vote removed";
+        } catch (ExecutionException e) {
+            return "Vote not found";
+        } catch (InterruptedException e) {
+            return "Vote not found";
+        }
+    }
+
+    public String castQuestionVote(QuestionVote questionVote) throws ExecutionException, InterruptedException {
         QuestionVote qv = getQuestionVoteByUidQid(questionVote.getUid(), questionVote.getQid());
         if(qv.getVqid()==null){
             int newVqid = Integer.parseInt(getLastVqid()) + 1;
@@ -215,10 +245,15 @@ public class QuestionService {
             return questionVote.getVqid();
         }
         else {
-            qv.setValue(questionVote.getValue());
-            ApiFuture<WriteResult> api = db.collection("QuestionVote").document(qv.getVqid()).set(qv);
-            api.get();
-            return qv.getVqid();
+            if(questionVote.getValue().equals(qv.getValue())){
+                return removeQuestionVote(qv);
+            }
+            else {
+                qv.setValue(questionVote.getValue());
+                ApiFuture<WriteResult> api = db.collection("QuestionVote").document(qv.getVqid()).set(qv);
+                api.get();
+                return qv.getVqid();
+            }
         }
     }
 
@@ -237,6 +272,18 @@ public class QuestionService {
             }
         }
         return totalValue;
+    }
+
+    public int getTotalVoteCount(String qid) throws ExecutionException, InterruptedException {
+        int count = 0;
+        CollectionReference ref = db.collection("QuestionVote");
+        Query query = ref.whereEqualTo("qid", qid).whereIn("value", Arrays.asList("Up", "Down"));
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            count++;
+        }
+        return count;
     }
 
     public String getUserVoteValue(String uid, String qid) throws ExecutionException, InterruptedException {

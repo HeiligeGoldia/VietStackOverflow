@@ -1,11 +1,13 @@
 package com.se.kltn.vietstack.controller;
 
+import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.question.QuestionDetail;
 import com.se.kltn.vietstack.model.question.QuestionTag;
 import com.se.kltn.vietstack.model.question.QuestionVote;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.AccountService;
+import com.se.kltn.vietstack.service.AnswerService;
 import com.se.kltn.vietstack.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,9 @@ public class QuestionController {
 
     @Autowired
     private QuestionService questionService;
+
+    @Autowired
+    private AnswerService answerService;
 
     @Autowired
     private AccountService accountService;
@@ -60,24 +65,49 @@ public class QuestionController {
         }
     }
 
-    //    ---------- Question Tag ----------
-
-    @PostMapping("/addTagToPost/{qid}")
-    // bat loi list tag null
-    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<QuestionTag> tags)
-            throws ExecutionException, InterruptedException {
+    @PutMapping("/closeQuestion/{qid}")
+    public ResponseEntity<String> closeQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            int i = 0;
-            for(QuestionTag qt : tags){
-                qt.setQid(qid);
-                questionService.addTagToPost(qt);
-                i++;
+            List<Answer> al = answerService.getAcceptAnswerByQid(qid);
+            if(al.isEmpty()){
+                String s = questionService.closeQuestion(qid, false);
+                return ResponseEntity.ok(s);
             }
-            return ResponseEntity.ok(String.valueOf(i));
+            else {
+                String s = questionService.closeQuestion(qid, true);
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
+    //    ---------- Question Tag ----------
+
+    @PostMapping("/addTagToPost/{qid}")
+    // kiem tra trung lap cac tag da them
+    // xoa cac tag khi chinh sua cau hoi
+    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<QuestionTag> tags)
+            throws ExecutionException, InterruptedException {
+        if(tags.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Tag list empty");
+        }
+        else {
+            User user = accountService.verifySC(ck);
+            if(user.getUid()==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+            }
+            else {
+                int i = 0;
+                for(QuestionTag qt : tags){
+                    qt.setQid(qid);
+                    questionService.addTagToPost(qt);
+                    i++;
+                }
+                return ResponseEntity.ok(String.valueOf(i));
+            }
         }
     }
 
@@ -90,21 +120,25 @@ public class QuestionController {
     //    ---------- Question Detail ----------
 
     @PostMapping("/createDetail/{qid}")
-    // bat loi list detail null
     public ResponseEntity<String> createDetail(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<QuestionDetail> questionDetailList)
             throws ExecutionException, InterruptedException {
-        User user = accountService.verifySC(ck);
-        if(user.getUid()==null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        if(questionDetailList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Detail list empty");
         }
         else {
-            int i = 0;
-            for(QuestionDetail qd : questionDetailList){
-                qd.setQid(qid);
-                questionService.createDetail(qd);
-                i++;
+            User user = accountService.verifySC(ck);
+            if(user.getUid()==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
             }
-            return ResponseEntity.ok(String.valueOf(i));
+            else {
+                int i = 0;
+                for(QuestionDetail qd : questionDetailList){
+                    qd.setQid(qid);
+                    questionService.createDetail(qd);
+                    i++;
+                }
+                return ResponseEntity.ok(String.valueOf(i));
+            }
         }
     }
 
@@ -116,8 +150,8 @@ public class QuestionController {
 
     //    ---------- Question Vote ----------
 
-    @PostMapping("/createQuestionVoteUD/{qid}")
-    public ResponseEntity<String> createQuestionVoteUD(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody QuestionVote questionVote)
+    @PostMapping("/castQuestionVoteUD/{qid}")
+    public ResponseEntity<String> castQuestionVoteUD(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody QuestionVote questionVote)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -126,7 +160,7 @@ public class QuestionController {
         else {
             questionVote.setQid(qid);
             questionVote.setUid(user.getUid());
-            String s = questionService.createQuestionVote(questionVote);
+            String s = questionService.castQuestionVote(questionVote);
             return ResponseEntity.ok(s);
         }
     }

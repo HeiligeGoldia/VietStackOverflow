@@ -26,7 +26,6 @@ public class VietstackApplication {
 
 		FirebaseApp.initializeApp(options);
 
-
 		SpringApplication.run(VietstackApplication.class, args);
 	}
 
