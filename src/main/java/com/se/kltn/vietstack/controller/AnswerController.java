@@ -4,9 +4,11 @@ import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.answer.AnswerDetail;
 import com.se.kltn.vietstack.model.answer.AnswerVote;
 import com.se.kltn.vietstack.model.dto.AnswerAnswerDetailDTO;
+import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.AccountService;
 import com.se.kltn.vietstack.service.AnswerService;
+import com.se.kltn.vietstack.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,9 @@ public class AnswerController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private QuestionService questionService;
+
     //    ---------- Answer ----------
 
     @PostMapping("/create/{qid}")
@@ -37,12 +42,18 @@ public class AnswerController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            answer.setUid(user.getUid());
-            answer.setQid(qid);
-            answer.setDate(new Date());
-            answer.setStatus("None");
-            String s = answerService.createAnswer(answer);
-            return ResponseEntity.ok(s);
+            Question q = questionService.getQuestionByQid(qid);
+            if(q.getStatus().equals("Closed")){
+                return ResponseEntity.ok("Question closed");
+            }
+            else {
+                answer.setUid(user.getUid());
+                answer.setQid(qid);
+                answer.setDate(new Date());
+                answer.setStatus("None");
+                String s = answerService.createAnswer(answer);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 

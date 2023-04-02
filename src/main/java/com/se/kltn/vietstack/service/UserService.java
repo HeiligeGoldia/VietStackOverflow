@@ -3,7 +3,6 @@ package com.se.kltn.vietstack.service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import com.se.kltn.vietstack.model.question.QuestionTag;
 import com.se.kltn.vietstack.model.user.FollowTag;
 import com.se.kltn.vietstack.model.user.Save;
 import com.se.kltn.vietstack.model.user.User;
