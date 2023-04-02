@@ -3,12 +3,13 @@ package com.se.kltn.vietstack.controller;
 import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.answer.AnswerDetail;
 import com.se.kltn.vietstack.model.answer.AnswerVote;
-import com.se.kltn.vietstack.model.dto.AnswerAnswerDetailDTO;
+import com.se.kltn.vietstack.model.dto.AnswerDTO;
 import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.AccountService;
 import com.se.kltn.vietstack.service.AnswerService;
 import com.se.kltn.vietstack.service.QuestionService;
+import com.se.kltn.vietstack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,9 @@ public class AnswerController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private QuestionService questionService;
@@ -57,13 +61,17 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getAnswerAndDetailByQid/{qid}")
-    public ResponseEntity<List<AnswerAnswerDetailDTO>> getAnswerAndDetailByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
-        List<AnswerAnswerDetailDTO> aadtl = new ArrayList<>();
+    @GetMapping("/getAnswerDTOByQid/{qid}")
+    public ResponseEntity<List<AnswerDTO>> getAnswerDTOByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        List<AnswerDTO> aadtl = new ArrayList<>();
         List<Answer> la = answerService.getAnswerByQid(qid);
         for(Answer a : la){
+            AnswerDTO dto = new AnswerDTO();
             List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
-            AnswerAnswerDetailDTO dto = new AnswerAnswerDetailDTO();
+            int av = answerService.getTotalVoteValue(a.getAid());
+            User u = userService.findByUid(a.getUid());
+            dto.setAnswerVote(av);
+            dto.setUser(u);
             dto.setAnswer(a);
             dto.setAnswerDetails(adl);
             aadtl.add(dto);

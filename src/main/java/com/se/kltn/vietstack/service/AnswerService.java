@@ -118,6 +118,13 @@ public class AnswerService {
 
     }
 
+    public int getTotalAnswerCountByQid(String qid) throws ExecutionException, InterruptedException {
+        CollectionReference collection = db.collection("Answer");
+        Query query = collection.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        return querySnapshot.get().size();
+    }
+
     //    ---------- Answer Detail ----------
 
     public String getLastAdid() throws ExecutionException, InterruptedException {

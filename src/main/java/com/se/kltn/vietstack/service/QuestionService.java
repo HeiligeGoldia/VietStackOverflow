@@ -274,17 +274,17 @@ public class QuestionService {
         return totalValue;
     }
 
-    public int getTotalVoteCount(String qid) throws ExecutionException, InterruptedException {
-        int count = 0;
-        CollectionReference ref = db.collection("QuestionVote");
-        Query query = ref.whereEqualTo("qid", qid).whereIn("value", Arrays.asList("Up", "Down"));
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs){
-            count++;
-        }
-        return count;
-    }
+//    public int getTotalVoteCount(String qid) throws ExecutionException, InterruptedException {
+//        int count = 0;
+//        CollectionReference ref = db.collection("QuestionVote");
+//        Query query = ref.whereEqualTo("qid", qid).whereIn("value", Arrays.asList("Up", "Down"));
+//        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+//        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+//        for(QueryDocumentSnapshot ds : docs){
+//            count++;
+//        }
+//        return count;
+//    }
 
     public String getUserVoteValue(String uid, String qid) throws ExecutionException, InterruptedException {
         QuestionVote qv = getQuestionVoteByUidQid(uid, qid);

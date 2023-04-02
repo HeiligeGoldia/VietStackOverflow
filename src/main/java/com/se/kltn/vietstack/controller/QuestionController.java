@@ -1,19 +1,20 @@
 package com.se.kltn.vietstack.controller;
 
 import com.se.kltn.vietstack.model.answer.Answer;
+import com.se.kltn.vietstack.model.dto.QuestionDTO;
 import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.question.QuestionDetail;
 import com.se.kltn.vietstack.model.question.QuestionTag;
 import com.se.kltn.vietstack.model.question.QuestionVote;
+import com.se.kltn.vietstack.model.tag.Tag;
 import com.se.kltn.vietstack.model.user.User;
-import com.se.kltn.vietstack.service.AccountService;
-import com.se.kltn.vietstack.service.AnswerService;
-import com.se.kltn.vietstack.service.QuestionService;
+import com.se.kltn.vietstack.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +28,12 @@ public class QuestionController {
 
     @Autowired
     private AnswerService answerService;
+
+    @Autowired
+    private TagService tagService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private AccountService accountService;
@@ -82,6 +89,30 @@ public class QuestionController {
                 return ResponseEntity.ok(s);
             }
         }
+    }
+
+    @GetMapping("/getAllQuestionDTO")
+    public ResponseEntity<List<QuestionDTO>> getAllQuestionDTO() throws ExecutionException, InterruptedException {
+        List<QuestionDTO> dtoList = new ArrayList<>();
+        List<Question> questions = questionService.getAllQuestionList();
+        for (Question q : questions){
+            QuestionDTO questionDTO = new QuestionDTO();
+            List<Tag> tags = new ArrayList<>();
+            List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+            for (QuestionTag qt : qtags){
+                 tags.add(tagService.getTagByTid(qt.getTid()));
+            }
+            int qv = questionService.getTotalVoteValue(q.getQid());
+            int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            User u = userService.findByUid(q.getUid());
+            questionDTO.setQuestion(q);
+            questionDTO.setTags(tags);
+            questionDTO.setQuestionVote(qv);
+            questionDTO.setAnswerCount(ac);
+            questionDTO.setUser(u);
+            dtoList.add(questionDTO);
+        }
+        return ResponseEntity.ok(dtoList);
     }
 
     //    ---------- Question Tag ----------
