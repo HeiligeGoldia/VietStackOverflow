@@ -117,10 +117,8 @@ public class QuestionController {
 
     //    ---------- Question Tag ----------
 
-    @PostMapping("/addTagToPost/{qid}")
-    // kiem tra trung lap cac tag da them
-    // xoa cac tag khi chinh sua cau hoi
-    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<QuestionTag> tags)
+    @PostMapping("/modifyTagPost/{qid}")
+    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<Tag> tags)
             throws ExecutionException, InterruptedException {
         if(tags.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Tag list empty");
@@ -132,20 +130,55 @@ public class QuestionController {
             }
             else {
                 int i = 0;
-                for(QuestionTag qt : tags){
-                    qt.setQid(qid);
-                    questionService.addTagToPost(qt);
+                int y = 0;
+                List<QuestionTag> tag = questionService.getQuestionTagByQid(qid);
+                List<String> tagIdOld = new ArrayList<>();
+                for(QuestionTag qt1 : tag){
+                    tagIdOld.add(qt1.getTid());
+                }
+                List<String> tagIdNew = new ArrayList<>();
+                for(Tag qt2 : tags){
+                    tagIdNew.add(qt2.getTid());
+                }
+
+                List<QuestionTag> newTags = new ArrayList<>();
+                for(String s1 : tagIdNew){
+                    if(!tagIdOld.contains(s1)){
+                        QuestionTag obj1 = new QuestionTag();
+                        obj1.setTid(s1);
+                        newTags.add(obj1);
+                    }
+                }
+                List<String> removedTags = new ArrayList<>();
+                for(String s2 : tagIdOld){
+                    if(!tagIdNew.contains(s2)){
+                        removedTags.add(s2);
+                    }
+                }
+
+                for (QuestionTag qt1 : newTags){
+                    qt1.setQid(qid);
+                    questionService.addTagToPost(qt1);
                     i++;
                 }
-                return ResponseEntity.ok(String.valueOf(i));
+                for (String qt2 : removedTags){
+                    QuestionTag rmt = questionService.getQuestionTagByQidTid(qid, qt2);
+                    questionService.removeQuestionTag(rmt);
+                    y++;
+                }
+                return ResponseEntity.ok("Added tag(s): " + i + " - Removed tag(s): " + y);
             }
         }
     }
 
     @GetMapping("/getQuestionTagByQid/{qid}")
-    public ResponseEntity<List<QuestionTag>> getQuestionTagByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<Tag>> getQuestionTagByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        List<Tag> tags = new ArrayList<>();
         List<QuestionTag> qtl = questionService.getQuestionTagByQid(qid);
-        return ResponseEntity.ok(qtl);
+        for (QuestionTag qt : qtl){
+            tags.add(tagService.getTagByTid(qt.getTid()));
+        }
+        return ResponseEntity.ok(tags);
     }
 
     //    ---------- Question Detail ----------

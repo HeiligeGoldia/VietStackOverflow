@@ -100,28 +100,55 @@ public class UserController {
     //    ---------- Follow Tag ----------
 
     @PostMapping("/modifyFollowTag")
-    // kiem tra trung lap cac tag da them
-    // xoa cac tag khi chinh sua
-    public ResponseEntity<String> modifyFollowTag(@CookieValue("sessionCookie") String ck, @RequestBody List<Tag> tagList) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> modifyFollowTag(@CookieValue("sessionCookie") String ck, @RequestBody List<Tag> tags) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            if(tagList.isEmpty()){
+            if(tags.isEmpty()){
                 String s = userService.removeAllUserFollowTag(user.getUid());
                 return ResponseEntity.ok(s);
             }
             else {
                 int i = 0;
-                for (Tag t : tagList){
-                    FollowTag ft = new FollowTag();
-                    ft.setTid(t.getTid());
-                    ft.setUid(user.getUid());
-                    userService.addFollowTag(ft);
+                int y = 0;
+                List<FollowTag> tag = userService.getFollowTagByUid(user.getUid());
+                List<String> tagIdOld = new ArrayList<>();
+                for (FollowTag qt1 : tag){
+                    tagIdOld.add(qt1.getTid());
+                }
+                List<String> tagIdNew = new ArrayList<>();
+                for(Tag qt2 : tags){
+                    tagIdNew.add(qt2.getTid());
+                }
+
+                List<FollowTag> newTags = new ArrayList<>();
+                for(String s1 : tagIdNew){
+                    if(!tagIdOld.contains(s1)){
+                        FollowTag obj1 = new FollowTag();
+                        obj1.setTid(s1);
+                        newTags.add(obj1);
+                    }
+                }
+                List<String> removedTags = new ArrayList<>();
+                for(String s2 : tagIdOld){
+                    if(!tagIdNew.contains(s2)){
+                        removedTags.add(s2);
+                    }
+                }
+
+                for (FollowTag t1 : newTags){
+                    t1.setUid(user.getUid());
+                    userService.addFollowTag(t1);
                     i++;
                 }
-                return ResponseEntity.ok(String.valueOf(i));
+                for (String t2 : removedTags){
+                    FollowTag rmt = userService.getFollowTagByUidTid(user.getUid(), t2);
+                    userService.removeFollowTag(rmt);
+                    y++;
+                }
+                return ResponseEntity.ok("Added tag(s): " + i + " - Removed tag(s): " + y);
             }
         }
     }

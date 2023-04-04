@@ -171,18 +171,37 @@ public class UserService {
         }
     }
 
-    public String removeAllUserFollowTag(String uid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("QuestionVote");
-        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("uid", uid);
+    public FollowTag getFollowTagByUidTid(String uid, String tid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("FollowTag");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("tid", tid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> s = querySnapshot.get().getDocuments();
-        if(s.isEmpty()){
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(FollowTag.class);
+        }
+        return new FollowTag();
+    }
+
+    public String removeAllUserFollowTag(String uid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("FollowTag");
+        Query query = ref.whereEqualTo("uid", uid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
             return "Empty";
         }
         else {
-            s.clear();
+            for(QueryDocumentSnapshot ds : docs){
+                removeFollowTag(ds.toObject(FollowTag.class));
+            }
             return "Clear";
         }
+    }
+
+    public String removeFollowTag(FollowTag followTag) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> writeResult = db.collection("FollowTag").document(followTag.getTfid()).delete();
+        writeResult.get();
+        return "Tag removed";
     }
 
 }

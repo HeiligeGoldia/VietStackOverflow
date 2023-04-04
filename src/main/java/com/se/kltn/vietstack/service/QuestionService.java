@@ -144,6 +144,23 @@ public class QuestionService {
         }
     }
 
+    public QuestionTag getQuestionTagByQidTid(String qid, String tid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionTag");
+        Query query = ref.whereEqualTo("qid", qid).whereEqualTo("tid", tid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(QuestionTag.class);
+        }
+        return new QuestionTag();
+    }
+
+    public String removeQuestionTag(QuestionTag questionTag) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> writeResult = db.collection("QuestionTag").document(questionTag.getTqid()).delete();
+        writeResult.get();
+        return "Tag removed";
+    }
+
     //    ---------- Question Detail ----------
 
     public String getLastQdid() throws ExecutionException, InterruptedException {
