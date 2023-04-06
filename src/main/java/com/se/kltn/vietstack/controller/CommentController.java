@@ -1,7 +1,9 @@
 package com.se.kltn.vietstack.controller;
 
 import com.se.kltn.vietstack.model.comment.Comment;
+import com.se.kltn.vietstack.model.comment.CommentReport;
 import com.se.kltn.vietstack.model.dto.CommentDTO;
+import com.se.kltn.vietstack.model.dto.CommentReportDTO;
 import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.AccountService;
@@ -80,7 +82,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/deleteComment/{cid}")
-    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid){
+    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -92,5 +94,54 @@ public class CommentController {
     }
 
     //    ---------- Comment Report ----------
+
+    @PostMapping("/report/{cid}")
+    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody String detail) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            CommentReport report = new CommentReport();
+            report.setUid(user.getUid());
+            report.setCid(cid);
+            report.setDetail(detail);
+            report.setStatus("Pending");
+            report.setDate(new Date());
+            String s = commentService.report(report);
+            return ResponseEntity.ok(s);
+        }
+    }
+
+    @DeleteMapping("/deleteReport/{rcid}")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String s = commentService.deleteReport(rcid);
+            return ResponseEntity.ok(s);
+        }
+    }
+
+    @GetMapping("/getUserReport")
+    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<CommentReport> rl = commentService.getUserReport(user.getUid());
+            List<CommentReportDTO> dtoList = new ArrayList<>();
+            for (CommentReport r : rl){
+                CommentReportDTO dto = new CommentReportDTO();
+                dto.setCommentReport(r);
+                dto.setUser(userService.findByUid(user.getUid()));
+                dtoList.add(dto);
+            }
+            return ResponseEntity.ok(dtoList);
+        }
+    }
 
 }

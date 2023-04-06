@@ -1,11 +1,10 @@
 package com.se.kltn.vietstack.controller;
 
 import com.se.kltn.vietstack.model.answer.Answer;
+import com.se.kltn.vietstack.model.dto.QuestionActivityHistoryDTO;
 import com.se.kltn.vietstack.model.dto.QuestionDTO;
-import com.se.kltn.vietstack.model.question.Question;
-import com.se.kltn.vietstack.model.question.QuestionDetail;
-import com.se.kltn.vietstack.model.question.QuestionTag;
-import com.se.kltn.vietstack.model.question.QuestionVote;
+import com.se.kltn.vietstack.model.dto.QuestionReportDTO;
+import com.se.kltn.vietstack.model.question.*;
 import com.se.kltn.vietstack.model.tag.Tag;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.*;
@@ -249,10 +248,83 @@ public class QuestionController {
 
     //    ---------- Question Activity History ----------
 
+    @GetMapping("/getQuestionActivityHistory/{qid}")
+    public ResponseEntity<List<QuestionActivityHistoryDTO>> getQuestionActivityHistory(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        List<QuestionActivityHistory> al = questionService.getQuestionActivityHistory(qid);
+        List<QuestionActivityHistoryDTO> dtoList = new ArrayList<>();
+        for (QuestionActivityHistory a : al){
+            QuestionActivityHistoryDTO dto = new QuestionActivityHistoryDTO();
+            dto.setQuestionActivityHistory(a);
+            dto.setUser(userService.findByUid(a.getUid()));
+            dtoList.add(dto);
+        }
+        return ResponseEntity.ok(dtoList);
+    }
 
+    @PostMapping("/createActivityHistory")
+    public ResponseEntity<String> createActivityHistory(@CookieValue("sessionCookie") String ck, @RequestBody QuestionActivityHistory questionActivityHistory)
+            throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            questionActivityHistory.setUid(user.getUid());
+            questionActivityHistory.setDate(new Date());
+            String s = questionService.createActivityHistory(questionActivityHistory);
+            return ResponseEntity.ok(s);
+        }
+    }
 
     //    ---------- Question Report ----------
 
+    @PostMapping("/report/{qid}")
+    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody String detail) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            QuestionReport report = new QuestionReport();
+            report.setUid(user.getUid());
+            report.setQid(qid);
+            report.setDetail(detail);
+            report.setStatus("Pending");
+            report.setDate(new Date());
+            String s = questionService.report(report);
+            return ResponseEntity.ok(s);
+        }
+    }
 
+    @DeleteMapping("/deleteReport/{rqid}")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rqid") String rqid) {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String s = questionService.deleteReport(rqid);
+            return ResponseEntity.ok(s);
+        }
+    }
+
+    @GetMapping("/getUserReport")
+    public ResponseEntity<List<QuestionReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<QuestionReport> rl = questionService.getUserReport(user.getUid());
+            List<QuestionReportDTO> dtoList = new ArrayList<>();
+            for (QuestionReport r : rl){
+                QuestionReportDTO dto = new QuestionReportDTO();
+                dto.setQuestionReport(r);
+                dto.setUser(userService.findByUid(user.getUid()));
+                dtoList.add(dto);
+            }
+            return ResponseEntity.ok(dtoList);
+        }
+    }
 
 }

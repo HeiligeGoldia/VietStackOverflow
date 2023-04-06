@@ -10,6 +10,7 @@ public class AnswerReport {
     private String raid;
     private String aid;
     private String uid;
+    private String detail;
     private Date date;
     private String status;
 

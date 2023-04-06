@@ -3,10 +3,7 @@ package com.se.kltn.vietstack.service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import com.se.kltn.vietstack.model.question.Question;
-import com.se.kltn.vietstack.model.question.QuestionDetail;
-import com.se.kltn.vietstack.model.question.QuestionTag;
-import com.se.kltn.vietstack.model.question.QuestionVote;
+import com.se.kltn.vietstack.model.question.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -315,10 +312,103 @@ public class QuestionService {
 
     //    ---------- Question Activity History ----------
 
+    public String getLastQahid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionActivityHistory");
+        ApiFuture<QuerySnapshot> api = ref.get();
+        QuerySnapshot doc = api.get();
+        List<QueryDocumentSnapshot> docs = doc.getDocuments();
+        if(docs.size() == 0){
+            return "0";
+        }
+        else{
+            List<Integer> docId = new ArrayList<>();
+            for(QueryDocumentSnapshot ds : docs){
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            return String.valueOf(docId.get(docId.size()-1));
+        }
+    }
 
+    public String createActivityHistory(QuestionActivityHistory questionActivityHistory) throws ExecutionException, InterruptedException {
+        int newQahid = Integer.parseInt(getLastQahid()) + 1;
+        String qahid = String.valueOf(newQahid);
+        questionActivityHistory.setQahid(qahid);
+
+        ApiFuture<WriteResult> api = db.collection("QuestionActivityHistory").document(questionActivityHistory.getQahid()).set(questionActivityHistory);
+        api.get();
+        return questionActivityHistory.getQahid();
+    }
+
+    public List<QuestionActivityHistory> getQuestionActivityHistory(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionActivityHistory> qal = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionActivityHistory");
+        Query query = ref.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return qal;
+        }
+        else {
+            for (QueryDocumentSnapshot d : docs) {
+                qal.add(d.toObject(QuestionActivityHistory.class));
+            }
+            return qal;
+        }
+    }
 
     //    ---------- Question Report ----------
 
+    public String getLastRqid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionReport");
+        ApiFuture<QuerySnapshot> api = ref.get();
+        QuerySnapshot doc = api.get();
+        List<QueryDocumentSnapshot> docs = doc.getDocuments();
+        if(docs.size() == 0){
+            return "0";
+        }
+        else{
+            List<Integer> docId = new ArrayList<>();
+            for(QueryDocumentSnapshot ds : docs){
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            return String.valueOf(docId.get(docId.size()-1));
+        }
+    }
 
+    public String report(QuestionReport questionReport) throws ExecutionException, InterruptedException {
+        int newRqid = Integer.parseInt(getLastRqid()) + 1;
+        String rqid = String.valueOf(newRqid);
+        questionReport.setRqid(rqid);
+
+        ApiFuture<WriteResult> api = db.collection("QuestionReport").document(questionReport.getRqid()).set(questionReport);
+        api.get();
+        return questionReport.getRqid();
+    }
+
+    public List<QuestionReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
+        List<QuestionReport> qrl = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereEqualTo("uid", uid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs) {
+            qrl.add(ds.toObject(QuestionReport.class));
+        }
+        return qrl;
+    }
+
+    public String deleteReport(String rqid){
+        try{
+            ApiFuture<WriteResult> writeResult = db.collection("QuestionReport").document(rqid).delete();
+            writeResult.get();
+            return "Report deleted";
+        } catch (ExecutionException e) {
+            return "Report not found";
+        } catch (InterruptedException e) {
+            return "Report not found";
+        }
+    }
 
 }
