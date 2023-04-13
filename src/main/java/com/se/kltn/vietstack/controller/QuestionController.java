@@ -258,7 +258,7 @@ public class QuestionController {
     }
 
     @PostMapping("/createActivityHistory/{qid}")
-    public ResponseEntity<String> createActivityHistory(@CookieValue("sessionCookie") String ck, @RequestBody QuestionActivityHistory questionActivityHistory)
+    public ResponseEntity<String> createActivityHistory(@CookieValue("sessionCookie") String ck, @PathVariable ("qid") String qid, @RequestBody QuestionActivityHistory questionActivityHistory)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -266,6 +266,7 @@ public class QuestionController {
         }
         else {
             questionActivityHistory.setUid(user.getUid());
+            questionActivityHistory.setQid(qid);
             questionActivityHistory.setDate(new Date());
             String s = questionService.createActivityHistory(questionActivityHistory);
             return ResponseEntity.ok(s);
