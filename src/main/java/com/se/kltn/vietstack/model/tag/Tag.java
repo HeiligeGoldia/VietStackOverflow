@@ -7,5 +7,6 @@ public class Tag {
 
     private String tid;
     private String name;
+    private String description;
 
 }

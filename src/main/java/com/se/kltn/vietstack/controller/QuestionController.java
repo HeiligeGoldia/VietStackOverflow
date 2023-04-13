@@ -117,7 +117,7 @@ public class QuestionController {
     //    ---------- Question Tag ----------
 
     @PostMapping("/modifyTagPost/{qid}")
-    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<Tag> tags)
+    public ResponseEntity<String> addTagToPost(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<String> tags)
             throws ExecutionException, InterruptedException {
         if(tags.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Tag list empty");
@@ -135,13 +135,9 @@ public class QuestionController {
                 for(QuestionTag qt1 : tag){
                     tagIdOld.add(qt1.getTid());
                 }
-                List<String> tagIdNew = new ArrayList<>();
-                for(Tag qt2 : tags){
-                    tagIdNew.add(qt2.getTid());
-                }
 
                 List<QuestionTag> newTags = new ArrayList<>();
-                for(String s1 : tagIdNew){
+                for(String s1 : tags){
                     if(!tagIdOld.contains(s1)){
                         QuestionTag obj1 = new QuestionTag();
                         obj1.setTid(s1);
@@ -150,7 +146,7 @@ public class QuestionController {
                 }
                 List<String> removedTags = new ArrayList<>();
                 for(String s2 : tagIdOld){
-                    if(!tagIdNew.contains(s2)){
+                    if(!tags.contains(s2)){
                         removedTags.add(s2);
                     }
                 }
