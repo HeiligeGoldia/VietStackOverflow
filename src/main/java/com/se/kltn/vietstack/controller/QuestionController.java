@@ -257,7 +257,7 @@ public class QuestionController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @PostMapping("/createActivityHistory")
+    @PostMapping("/createActivityHistory/{qid}")
     public ResponseEntity<String> createActivityHistory(@CookieValue("sessionCookie") String ck, @RequestBody QuestionActivityHistory questionActivityHistory)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);

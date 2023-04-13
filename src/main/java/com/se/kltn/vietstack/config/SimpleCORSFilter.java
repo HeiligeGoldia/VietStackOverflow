@@ -3,8 +3,6 @@ package com.se.kltn.vietstack.config;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
 
@@ -24,5 +22,4 @@ public class SimpleCORSFilter implements Filter {
         chain.doFilter(req, res);
     }
 
-    // other methods omitted for brevity
 }

@@ -64,6 +64,23 @@ public class QuestionService {
         }
     }
 
+    public List<Question> getQuestionByTag() throws ExecutionException, InterruptedException {
+        List<Question> ql = new ArrayList<>();
+        CollectionReference ref = db.collection("Question");
+        Query query = ref.whereNotEqualTo("qid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return ql;
+        }
+        else {
+            for (QueryDocumentSnapshot d : docs) {
+                ql.add(d.toObject(Question.class));
+            }
+            return ql;
+        }
+    }
+
     public Question getQuestionByQid(String qid) throws ExecutionException, InterruptedException {
         Question question;
         DocumentReference ref = db.collection("Question").document(qid);
