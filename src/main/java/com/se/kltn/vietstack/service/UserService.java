@@ -22,7 +22,7 @@ public class UserService {
 
     public boolean checkEmail(String email) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("User");
-        Query query = ref.whereEqualTo("Email", email);
+        Query query = ref.whereEqualTo("email", email);
         List<QueryDocumentSnapshot> querySnapshot = query.get().get().getDocuments();
         if(querySnapshot.isEmpty()){
             return true;
@@ -52,6 +52,23 @@ public class UserService {
         ApiFuture<WriteResult> api = db.collection("User").document(user.getUid()).set(user);
         api.get();
         return user.getUid();
+    }
+
+    public List<User> getAllUser() throws ExecutionException, InterruptedException {
+        List<User> ul = new ArrayList<>();
+        CollectionReference ref = db.collection("User");
+        Query query = ref.whereNotEqualTo("uid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return ul;
+        }
+        else {
+            for (QueryDocumentSnapshot d : docs) {
+                ul.add(d.toObject(User.class));
+            }
+            return ul;
+        }
     }
 
     //    ---------- Save ----------

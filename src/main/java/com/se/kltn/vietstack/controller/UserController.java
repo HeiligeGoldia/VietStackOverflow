@@ -63,6 +63,12 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getAllUser")
+    private ResponseEntity<List<User>> getAllUser() throws ExecutionException, InterruptedException {
+        List<User> ul = userService.getAllUser();
+        return ResponseEntity.ok(ul);
+    }
+
     //    ---------- Save ----------
 
     @PostMapping("/saveQuestion/{qid}")

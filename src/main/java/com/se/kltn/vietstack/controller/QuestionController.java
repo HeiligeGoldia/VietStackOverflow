@@ -114,6 +114,54 @@ public class QuestionController {
         return ResponseEntity.ok(dtoList);
     }
 
+    @GetMapping("/getQuestionDTOByUid/{uid}")
+    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByUid(@PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+        List<QuestionDTO> dtoList = new ArrayList<>();
+        List<Question> questions = questionService.getQidByUid(uid);
+        for (Question q : questions){
+            QuestionDTO questionDTO = new QuestionDTO();
+            List<Tag> tags = new ArrayList<>();
+            List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+            for (QuestionTag qt : qtags){
+                tags.add(tagService.getTagByTid(qt.getTid()));
+            }
+            int qv = questionService.getTotalVoteValue(q.getQid());
+            int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            User u = userService.findByUid(q.getUid());
+            questionDTO.setQuestion(q);
+            questionDTO.setTags(tags);
+            questionDTO.setQuestionVote(qv);
+            questionDTO.setAnswerCount(ac);
+            questionDTO.setUser(u);
+            dtoList.add(questionDTO);
+        }
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/getQuestionDTOByTag/{tid}")
+    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByTag(@PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
+        List<QuestionDTO> dtoList = new ArrayList<>();
+        List<Question> questions = questionService.getQidByTid(tid);
+        for (Question q : questions){
+            QuestionDTO questionDTO = new QuestionDTO();
+            List<Tag> tags = new ArrayList<>();
+            List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+            for (QuestionTag qt : qtags){
+                tags.add(tagService.getTagByTid(qt.getTid()));
+            }
+            int qv = questionService.getTotalVoteValue(q.getQid());
+            int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            User u = userService.findByUid(q.getUid());
+            questionDTO.setQuestion(q);
+            questionDTO.setTags(tags);
+            questionDTO.setQuestionVote(qv);
+            questionDTO.setAnswerCount(ac);
+            questionDTO.setUser(u);
+            dtoList.add(questionDTO);
+        }
+        return ResponseEntity.ok(dtoList);
+    }
+
     //    ---------- Question Tag ----------
 
     @PostMapping("/modifyTagPost/{qid}")
