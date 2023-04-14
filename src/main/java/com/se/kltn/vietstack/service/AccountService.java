@@ -13,6 +13,8 @@ import com.twilio.rest.verify.v2.service.Verification;
 import com.twilio.rest.verify.v2.service.VerificationCheck;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +23,27 @@ public class AccountService {
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
     Firestore db = FirestoreClient.getFirestore();
+
+//    public void adminClaim(String uid) throws FirebaseAuthException {
+//        Map<String, Object> claims = new HashMap<>();
+//        claims.put("role", "Admin");
+//        auth.setCustomUserClaims(uid,claims);
+//    }
+
+    public void userClaim(String uid) throws FirebaseAuthException {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "User");
+        auth.setCustomUserClaims(uid,claims);
+    }
+
+    public String getUserClaims(String ss) throws FirebaseAuthException {
+        FirebaseToken tk = auth.verifySessionCookie(ss, true);
+        Map<String, Object> claims = tk.getClaims();
+        if(claims.get("role")==null){
+            return "No role found";
+        }
+        else return claims.get("role").toString();
+    }
 
     public String register1(String email) throws FirebaseAuthException {
         Twilio.init("AC96e6a911a4dbdeb1ba8e7d5aaabedd76", "a46fcbb8d7640d91183e38d5e8e0a73d");
@@ -46,7 +69,11 @@ public class AccountService {
         UserRecord.CreateRequest ur = new UserRecord.CreateRequest();
         ur.setEmail(account.getEmail());
         ur.setPassword(account.getPassword());
+        ur.setEmailVerified(true);
         String id = auth.createUser(ur).getUid();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "User");
+        auth.setCustomUserClaims(id,claims);
         return id;
     }
 

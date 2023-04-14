@@ -9,7 +9,6 @@ public class User {
     private String name;
     private String email;
     private String location;
-    private String role;
     private String avatar;
     private String about;
 

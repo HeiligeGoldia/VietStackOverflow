@@ -23,6 +23,29 @@ public class AccountController {
     @Autowired
     private UserService userService;
 
+//    @GetMapping("/getUserClaims")
+//    public ResponseEntity<String> getUserClaims(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException {
+//        User user = accountService.verifySC(ck);
+//        if(user.getUid()==null){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+//        }
+//        else {
+//            return ResponseEntity.ok(accountService.getUserClaims(ck));
+//        }
+//    }
+//
+//    @PostMapping("/adminClaim/{uid}")
+//    public ResponseEntity<String> adminClaim(@PathVariable("uid") String uid) throws FirebaseAuthException {
+//        accountService.adminClaim(uid);
+//        return ResponseEntity.ok("Admin role granted");
+//    }
+//
+//    @PostMapping("/userClaim/{uid}")
+//    public ResponseEntity<String> userClaim(@PathVariable("uid") String uid) throws FirebaseAuthException {
+//        accountService.userClaim(uid);
+//        return ResponseEntity.ok("User role granted");
+//    }
+
     @PostMapping("/register")
     public ResponseEntity<String> register1(@RequestBody Account account) throws FirebaseAuthException, ExecutionException, InterruptedException {
         if(userService.checkEmail(account.getEmail())){
@@ -43,7 +66,6 @@ public class AccountController {
             String id = accountService.create(account);
             user.setUid(id);
             user.setEmail(account.getEmail());
-            user.setRole("User");
             userService.create(user);
             return ResponseEntity.ok(id);
         }

@@ -57,7 +57,6 @@ public class UserController {
             User u = userService.findByUid(user.getUid());
             newUser.setUid(u.getUid());
             newUser.setEmail(u.getEmail());
-            newUser.setRole(u.getRole());
             String s = userService.updateInfo(newUser);
             return ResponseEntity.ok(s);
         }
@@ -105,8 +104,8 @@ public class UserController {
 
     //    ---------- Follow Tag ----------
 
-    @PostMapping("/modifyFollowTag")
-    public ResponseEntity<String> modifyFollowTag(@CookieValue("sessionCookie") String ck, @RequestBody List<Tag> tags) throws ExecutionException, InterruptedException {
+    @PostMapping("/modifyFollowTags")
+    public ResponseEntity<String> modifyFollowTags(@CookieValue("sessionCookie") String ck, @RequestBody List<Tag> tags) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -155,6 +154,45 @@ public class UserController {
                     y++;
                 }
                 return ResponseEntity.ok("Added tag(s): " + i + " - Removed tag(s): " + y);
+            }
+        }
+    }
+
+    @PostMapping("/modifyFollowTag/{tid}")
+    public ResponseEntity<String> modifyFollowTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            FollowTag ft = userService.getFollowTagByUidTid(user.getUid(), tid);
+            if(ft.getTfid()==null){
+                FollowTag fta = new FollowTag();
+                fta.setUid(user.getUid());
+                fta.setTid(tid);
+                String s = userService.addFollowTag(fta);
+                return ResponseEntity.ok(s);
+            }
+            else {
+                String s = userService.removeFollowTag(ft);
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
+    @GetMapping("/checkFollowTag/{tid}")
+    public ResponseEntity<String> checkFollowTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            FollowTag ft = userService.getFollowTagByUidTid(user.getUid(), tid);
+            if(ft.getTfid()==null){
+                return ResponseEntity.ok("Not following");
+            }
+            else {
+                return ResponseEntity.ok("Following");
             }
         }
     }
