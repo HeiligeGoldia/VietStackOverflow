@@ -48,6 +48,17 @@ public class CommentService {
         return new Comment();
     }
 
+    public Comment getCommentByCid(String cid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Comment");
+        Query query = ref.whereEqualTo("cid", cid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(Comment.class);
+        }
+        return new Comment();
+    }
+
     public String createComment(Comment comment) throws ExecutionException, InterruptedException {
         Comment c = getCommentByUidQid(comment.getUid(), comment.getQid());
         if(c.getCid()==null){
@@ -112,14 +123,31 @@ public class CommentService {
         }
     }
 
-    public String report(CommentReport commentReport) throws ExecutionException, InterruptedException {
-        int newRcid = Integer.parseInt(getLastRcid()) + 1;
-        String rcid = String.valueOf(newRcid);
-        commentReport.setRcid(rcid);
+    public CommentReport getReportByUidCid(String uid, String cid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("cid", cid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(CommentReport.class);
+        }
+        return new CommentReport();
+    }
 
-        ApiFuture<WriteResult> api = db.collection("CommentReport").document(commentReport.getRcid()).set(commentReport);
-        api.get();
-        return commentReport.getRcid();
+    public String report(CommentReport commentReport) throws ExecutionException, InterruptedException {
+        CommentReport cr = getReportByUidCid(commentReport.getUid(), commentReport.getCid());
+        if(cr.getRcid()==null){
+            int newRcid = Integer.parseInt(getLastRcid()) + 1;
+            String rcid = String.valueOf(newRcid);
+            commentReport.setRcid(rcid);
+
+            ApiFuture<WriteResult> api = db.collection("CommentReport").document(commentReport.getRcid()).set(commentReport);
+            api.get();
+            return commentReport.getRcid();
+        }
+        else {
+            return "Already reported";
+        }
     }
 
     public List<CommentReport> getUserReport(String uid) throws ExecutionException, InterruptedException {

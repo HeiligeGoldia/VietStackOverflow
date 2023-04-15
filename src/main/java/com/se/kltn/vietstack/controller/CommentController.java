@@ -102,14 +102,37 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            CommentReport report = new CommentReport();
-            report.setUid(user.getUid());
-            report.setCid(cid);
-            report.setDetail(detail);
-            report.setStatus("Pending");
-            report.setDate(new Date());
-            String s = commentService.report(report);
-            return ResponseEntity.ok(s);
+            Comment c = commentService.getCommentByCid(cid);
+            if(c.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Can not report your own comment");
+            }
+            else {
+                CommentReport report = new CommentReport();
+                report.setUid(user.getUid());
+                report.setCid(cid);
+                report.setDetail(detail);
+                report.setStatus("Pending");
+                report.setDate(new Date());
+                String s = commentService.report(report);
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
+    @GetMapping("/getUserReportValue/{cid}")
+    public ResponseEntity<String> getUserReportValue(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            CommentReport cr = commentService.getReportByUidCid(user.getUid(), cid);
+            if(cr.getRcid()==null){
+                return ResponseEntity.ok("None");
+            }
+            else {
+                return ResponseEntity.ok(cr.getRcid());
+            }
         }
     }
 
