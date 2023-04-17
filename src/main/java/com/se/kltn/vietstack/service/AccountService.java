@@ -24,11 +24,11 @@ public class AccountService {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     Firestore db = FirestoreClient.getFirestore();
 
-//    public void adminClaim(String uid) throws FirebaseAuthException {
-//        Map<String, Object> claims = new HashMap<>();
-//        claims.put("role", "Admin");
-//        auth.setCustomUserClaims(uid,claims);
-//    }
+    public void adminClaim(String uid) throws FirebaseAuthException {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "Admin");
+        auth.setCustomUserClaims(uid,claims);
+    }
 
     public void userClaim(String uid) throws FirebaseAuthException {
         Map<String, Object> claims = new HashMap<>();

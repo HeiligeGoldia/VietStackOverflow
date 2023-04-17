@@ -61,6 +61,27 @@ public class CommentController {
         }
     }
 
+    @PutMapping("/edit/{cid}")
+    public ResponseEntity<String> edit(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody Comment comment) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            Comment c = commentService.getCommentByCid(cid);
+            if(!c.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                c.setDate(new Date());
+                c.setDetail(comment.getDetail());
+                c.setStatus("Modified");
+                String s = commentService.editComment(c);
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
     @GetMapping("/getCommentByQid/{qid}")
     public ResponseEntity<List<Comment>> getCommentByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         List<Comment> lc = commentService.getCommentByQid(qid);
@@ -82,14 +103,20 @@ public class CommentController {
     }
 
     @DeleteMapping("/deleteComment/{cid}")
-    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) {
+    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            String s = commentService.deleteComment(cid);
-            return ResponseEntity.ok(s);
+            Comment c = commentService.getCommentByCid(cid);
+            if(!c.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                String s = commentService.deleteComment(cid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 

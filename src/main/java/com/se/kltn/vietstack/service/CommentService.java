@@ -60,23 +60,18 @@ public class CommentService {
     }
 
     public String createComment(Comment comment) throws ExecutionException, InterruptedException {
-        Comment c = getCommentByUidQid(comment.getUid(), comment.getQid());
-        if(c.getCid()==null){
-            int newCid = Integer.parseInt(getLastCid()) + 1;
-            String cid = String.valueOf(newCid);
-            comment.setCid(cid);
-            ApiFuture<WriteResult> api = db.collection("Comment").document(comment.getCid()).set(comment);
-            api.get();
-            return comment.getCid();
-        }
-        else {
-            c.setDate(comment.getDate());
-            c.setDetail(comment.getDetail());
-            c.setStatus("Modified");
-            ApiFuture<WriteResult> api = db.collection("Comment").document(c.getCid()).set(c);
-            api.get();
-            return c.getCid();
-        }
+        int newCid = Integer.parseInt(getLastCid()) + 1;
+        String cid = String.valueOf(newCid);
+        comment.setCid(cid);
+        ApiFuture<WriteResult> api = db.collection("Comment").document(comment.getCid()).set(comment);
+        api.get();
+        return comment.getCid();
+    }
+
+    public String editComment(Comment comment) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("Comment").document(comment.getCid()).set(comment);
+        api.get();
+        return comment.getCid();
     }
 
     public List<Comment> getCommentByQid(String qid) throws ExecutionException, InterruptedException {

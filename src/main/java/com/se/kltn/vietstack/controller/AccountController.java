@@ -33,18 +33,50 @@ public class AccountController {
 //            return ResponseEntity.ok(accountService.getUserClaims(ck));
 //        }
 //    }
-//
-//    @PostMapping("/adminClaim/{uid}")
-//    public ResponseEntity<String> adminClaim(@PathVariable("uid") String uid) throws FirebaseAuthException {
-//        accountService.adminClaim(uid);
-//        return ResponseEntity.ok("Admin role granted");
-//    }
-//
-//    @PostMapping("/userClaim/{uid}")
-//    public ResponseEntity<String> userClaim(@PathVariable("uid") String uid) throws FirebaseAuthException {
-//        accountService.userClaim(uid);
-//        return ResponseEntity.ok("User role granted");
-//    }
+
+    @PostMapping("/adminClaim/{uid}")
+    public ResponseEntity<String> adminClaim(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if(role.equals("Admin")){
+                accountService.adminClaim(uid);
+                User u = userService.findByUid(uid);
+                u.setRole("Admin");
+                userService.updateInfo(u);
+                accountService.clearSessionCookieById(uid);
+                return ResponseEntity.ok("Admin role granted");
+            }
+            else {
+                return ResponseEntity.ok("Access denied");
+            }
+        }
+    }
+
+    @PostMapping("/userClaim/{uid}")
+    public ResponseEntity<String> userClaim(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if(role.equals("Admin")){
+                accountService.userClaim(uid);
+                User u = userService.findByUid(uid);
+                u.setRole("User");
+                userService.updateInfo(u);
+                accountService.clearSessionCookieById(uid);
+                return ResponseEntity.ok("User role granted");
+            }
+            else {
+                return ResponseEntity.ok("Access denied");
+            }
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<String> register1(@RequestBody Account account) throws FirebaseAuthException, ExecutionException, InterruptedException {
@@ -66,6 +98,7 @@ public class AccountController {
             String id = accountService.create(account);
             user.setUid(id);
             user.setEmail(account.getEmail());
+            user.setRole("User");
             userService.create(user);
             return ResponseEntity.ok(id);
         }
@@ -87,11 +120,11 @@ public class AccountController {
         else return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/clearSessionCookieById/{uid}")
-    public ResponseEntity<String> clearSessionCookieById(@PathVariable("uid") String uid){
-        String s = accountService.clearSessionCookieById(uid);
-        return ResponseEntity.ok(s);
-    }
+//    @PostMapping("/clearSessionCookieById/{uid}")
+//    public ResponseEntity<String> clearSessionCookieById(@PathVariable("uid") String uid){
+//        String s = accountService.clearSessionCookieById(uid);
+//        return ResponseEntity.ok(s);
+//    }
 
     @PostMapping("/clearSessionCookieAndRevoke")
     public ResponseEntity<String> clearSessionCookieAndRevoke(@CookieValue("sessionCookie") String ck){

@@ -57,6 +57,7 @@ public class UserController {
             User u = userService.findByUid(user.getUid());
             newUser.setUid(u.getUid());
             newUser.setEmail(u.getEmail());
+            newUser.setRole(u.getRole());
             String s = userService.updateInfo(newUser);
             return ResponseEntity.ok(s);
         }
