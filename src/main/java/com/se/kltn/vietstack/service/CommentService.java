@@ -37,17 +37,6 @@ public class CommentService {
         }
     }
 
-    public Comment getCommentByUidQid(String uid, String qid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("Comment");
-        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("qid", qid);
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs){
-            return ds.toObject(Comment.class);
-        }
-        return new Comment();
-    }
-
     public Comment getCommentByCid(String cid) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("Comment");
         Query query = ref.whereEqualTo("cid", cid);
@@ -80,8 +69,13 @@ public class CommentService {
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
-            cl.add(ds.toObject(Comment.class));
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+        for(Integer i : docId) {
+            cl.add(ref.document(String.valueOf(i)).get().get().toObject(Comment.class));
         }
         return cl;
     }
@@ -121,6 +115,17 @@ public class CommentService {
     public CommentReport getReportByUidCid(String uid, String cid) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("CommentReport");
         Query query = ref.whereEqualTo("uid", uid).whereEqualTo("cid", cid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(CommentReport.class);
+        }
+        return new CommentReport();
+    }
+
+    public CommentReport getReportByRcid(String rcid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref.whereEqualTo("rcid", rcid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         for(QueryDocumentSnapshot ds : docs){

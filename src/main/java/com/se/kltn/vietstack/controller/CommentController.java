@@ -1,5 +1,6 @@
 package com.se.kltn.vietstack.controller;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.comment.Comment;
 import com.se.kltn.vietstack.model.comment.CommentReport;
 import com.se.kltn.vietstack.model.dto.CommentDTO;
@@ -103,14 +104,15 @@ public class CommentController {
     }
 
     @DeleteMapping("/deleteComment/{cid}")
-    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
             Comment c = commentService.getCommentByCid(cid);
-            if(!c.getUid().equals(user.getUid())){
+            String role = accountService.getUserClaims(ck);
+            if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
                 return ResponseEntity.ok("Access denied");
             }
             else {
@@ -164,14 +166,21 @@ public class CommentController {
     }
 
     @DeleteMapping("/deleteReport/{rcid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) {
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            String s = commentService.deleteReport(rcid);
-            return ResponseEntity.ok(s);
+            String role = accountService.getUserClaims(ck);
+            CommentReport c = commentService.getReportByRcid(rcid);
+            if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                String s = commentService.deleteReport(rcid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
