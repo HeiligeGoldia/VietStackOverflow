@@ -39,7 +39,7 @@ public class AnswerController {
     //    ---------- Answer ----------
 
     @PostMapping("/create/{qid}")
-    public ResponseEntity<String> create(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody Answer answer)
+    public ResponseEntity<String> create(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -51,6 +51,7 @@ public class AnswerController {
                 return ResponseEntity.ok("Question closed");
             }
             else {
+                Answer answer = new Answer();
                 answer.setUid(user.getUid());
                 answer.setQid(qid);
                 answer.setDate(new Date());
