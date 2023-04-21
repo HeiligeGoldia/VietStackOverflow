@@ -414,6 +414,7 @@ public class QuestionService {
 
     public List<QuestionActivityHistory> getQuestionActivityHistory(String qid) throws ExecutionException, InterruptedException {
         List<QuestionActivityHistory> qal = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("QuestionActivityHistory");
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -422,8 +423,13 @@ public class QuestionService {
             return qal;
         }
         else {
-            for (QueryDocumentSnapshot d : docs) {
-                qal.add(d.toObject(QuestionActivityHistory.class));
+            for (QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+
+            for(Integer i : docId) {
+                qal.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionActivityHistory.class));
             }
             return qal;
         }
