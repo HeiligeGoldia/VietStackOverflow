@@ -81,30 +81,11 @@ public class AnswerController {
 
     @GetMapping("/getAnswerDTOByQidCk/{qid}")
     public ResponseEntity<List<AnswerDTO>> getAnswerDTOByQidCk(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
-        try {
-            User user = accountService.verifySC(ck);
-            if(user.getUid()==null){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            else {
-                List<AnswerDTO> aadtl = new ArrayList<>();
-                List<Answer> la = answerService.getAnswerByQid(qid);
-                for(Answer a : la){
-                    AnswerDTO dto = new AnswerDTO();
-                    List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
-                    int av = answerService.getTotalVoteValue(a.getAid());
-                    User u = userService.findByUid(a.getUid());
-                    String vv = answerService.getUserVoteValue(u.getUid(), a.getAid());
-                    dto.setAnswerVote(av);
-                    dto.setUser(u);
-                    dto.setAnswer(a);
-                    dto.setAnswerDetails(adl);
-                    dto.setVoteValue(vv);
-                    aadtl.add(dto);
-                }
-                return ResponseEntity.ok(aadtl);
-            }
-        } catch (Exception e) {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
             List<AnswerDTO> aadtl = new ArrayList<>();
             List<Answer> la = answerService.getAnswerByQid(qid);
             for(Answer a : la){
@@ -112,10 +93,12 @@ public class AnswerController {
                 List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
                 int av = answerService.getTotalVoteValue(a.getAid());
                 User u = userService.findByUid(a.getUid());
+                String vv = answerService.getUserVoteValue(u.getUid(), a.getAid());
                 dto.setAnswerVote(av);
                 dto.setUser(u);
                 dto.setAnswer(a);
                 dto.setAnswerDetails(adl);
+                dto.setVoteValue(vv);
                 aadtl.add(dto);
             }
             return ResponseEntity.ok(aadtl);
@@ -221,14 +204,15 @@ public class AnswerController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @PostMapping("/createActivityHistory")
-    public ResponseEntity<String> createActivityHistory(@CookieValue("sessionCookie") String ck, @RequestBody AnswerActivityHistory answerActivityHistory)
+    @PostMapping("/createActivityHistory/{aid}")
+    public ResponseEntity<String> createActivityHistory(@PathVariable("aid") String aid, @CookieValue("sessionCookie") String ck, @RequestBody AnswerActivityHistory answerActivityHistory)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
+            answerActivityHistory.setAid(aid);
             answerActivityHistory.setUid(user.getUid());
             answerActivityHistory.setDate(new Date());
             String s = answerService.createActivityHistory(answerActivityHistory);

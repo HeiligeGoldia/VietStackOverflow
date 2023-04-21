@@ -242,6 +242,7 @@ public class QuestionService {
 
     public List<QuestionDetail> getQuestionDetailByQid(String qid) throws ExecutionException, InterruptedException {
         List<QuestionDetail> qdl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("QuestionDetail");
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -250,8 +251,13 @@ public class QuestionService {
             return qdl;
         }
         else {
-            for (QueryDocumentSnapshot d : docs) {
-                qdl.add(d.toObject(QuestionDetail.class));
+            for (QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+
+            for(Integer i : docId) {
+                qdl.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionDetail.class));
             }
             return qdl;
         }
