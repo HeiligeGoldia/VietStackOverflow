@@ -69,11 +69,13 @@ public class CommentService {
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
         List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
             docId.add(Integer.parseInt(ds.getId()));
         }
         Collections.sort(docId);
+
         for(Integer i : docId) {
             cl.add(ref.document(String.valueOf(i)).get().get().toObject(Comment.class));
         }
@@ -162,7 +164,7 @@ public class CommentService {
         return crl;
     }
 
-    public String deleteReport(String rcid){
+    public String deleteReport(String rcid) {
         try{
             ApiFuture<WriteResult> writeResult = db.collection("CommentReport").document(rcid).delete();
             writeResult.get();

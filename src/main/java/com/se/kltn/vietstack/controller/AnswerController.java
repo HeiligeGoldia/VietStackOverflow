@@ -79,6 +79,32 @@ public class AnswerController {
         return ResponseEntity.ok(aadtl);
     }
 
+    @GetMapping("/getAnswerDTOByQidCk/{qid}")
+    public ResponseEntity<List<AnswerDTO>> getAnswerDTOByQidCk(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<AnswerDTO> aadtl = new ArrayList<>();
+            List<Answer> la = answerService.getAnswerByQid(qid);
+            for(Answer a : la){
+                AnswerDTO dto = new AnswerDTO();
+                List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
+                int av = answerService.getTotalVoteValue(a.getAid());
+                User u = userService.findByUid(a.getUid());
+                String vv = answerService.getUserVoteValue(u.getUid(), a.getAid());
+                dto.setAnswerVote(av);
+                dto.setUser(u);
+                dto.setAnswer(a);
+                dto.setAnswerDetails(adl);
+                dto.setVoteValue(vv);
+                aadtl.add(dto);
+            }
+            return ResponseEntity.ok(aadtl);
+        }
+    }
+
     @GetMapping("/getAnswerByQid/{qid}")
     public ResponseEntity<List<Answer>> getAnswerByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         List<Answer> la = answerService.getAnswerByQid(qid);

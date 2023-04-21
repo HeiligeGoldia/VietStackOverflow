@@ -47,8 +47,15 @@ public class QuestionService {
         return question.getQid();
     }
 
+    public String edit(Question question) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("Question").document(question.getQid()).set(question);
+        api.get();
+        return question.getQid();
+    }
+
     public List<Question> getAllQuestionList() throws ExecutionException, InterruptedException {
         List<Question> ql = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("Question");
         Query query = ref.whereNotEqualTo("qid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -57,8 +64,12 @@ public class QuestionService {
             return ql;
         }
         else {
-            for (QueryDocumentSnapshot d : docs) {
-                ql.add(d.toObject(Question.class));
+            for (QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            for(Integer i : docId) {
+                ql.add(ref.document(String.valueOf(i)).get().get().toObject(Question.class));
             }
             return ql;
         }
@@ -109,6 +120,12 @@ public class QuestionService {
             }
             return qtl;
         }
+    }
+
+    public String delete(String qid) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> writeResult = db.collection("Question").document(qid).delete();
+        writeResult.get();
+        return "Question deleted";
     }
 
     public List<Question> getQidByTid(String tid) throws ExecutionException, InterruptedException {
@@ -237,6 +254,20 @@ public class QuestionService {
                 qdl.add(d.toObject(QuestionDetail.class));
             }
             return qdl;
+        }
+    }
+
+    public String removeAllDetailByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionDetail> qdl = getQuestionDetailByQid(qid);
+        if(qdl.isEmpty()) {
+            return "Details list empty!";
+        }
+        else {
+            for(QuestionDetail qd : qdl) {
+                ApiFuture<WriteResult> writeResult = db.collection("QuestionDetail").document(qd.getQdid()).delete();
+                writeResult.get();
+            }
+            return "Details deleted";
         }
     }
 
@@ -432,6 +463,28 @@ public class QuestionService {
             qrl.add(ds.toObject(QuestionReport.class));
         }
         return qrl;
+    }
+
+    public QuestionReport getReportByRqid(String rqid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereEqualTo("rqid", rqid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(QuestionReport.class);
+        }
+        return new QuestionReport();
+    }
+
+    public QuestionReport getReportByUidQid(String uid, String qid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(QuestionReport.class);
+        }
+        return new QuestionReport();
     }
 
     public String deleteReport(String rqid){

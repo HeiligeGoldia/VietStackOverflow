@@ -1,5 +1,6 @@
 package com.se.kltn.vietstack.controller;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.dto.QuestionActivityHistoryDTO;
 import com.se.kltn.vietstack.model.dto.QuestionDTO;
@@ -54,6 +55,26 @@ public class QuestionController {
         }
     }
 
+    @PutMapping("/edit/{qid}")
+    public ResponseEntity<String> edit(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody Question question)
+            throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            Question q = questionService.getQuestionByQid(qid);
+            if(!q.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                q.setTitle(question.getTitle());
+                String s = questionService.edit(q);
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
     @GetMapping("/getAllQuestionList")
     public ResponseEntity<List<Question>> getAllQuestionList() throws ExecutionException, InterruptedException {
         List<Question> ql = questionService.getAllQuestionList();
@@ -72,20 +93,27 @@ public class QuestionController {
     }
 
     @PutMapping("/closeQuestion/{qid}")
-    public ResponseEntity<String> closeQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> closeQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            List<Answer> al = answerService.getAcceptAnswerByQid(qid);
-            if(al.isEmpty()){
-                String s = questionService.closeQuestion(qid, false);
-                return ResponseEntity.ok(s);
+            String role = accountService.getUserClaims(ck);
+            Question q = questionService.getQuestionByQid(qid);
+            if(!q.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                return ResponseEntity.ok("Access denied");
             }
             else {
-                String s = questionService.closeQuestion(qid, true);
-                return ResponseEntity.ok(s);
+                List<Answer> al = answerService.getAcceptAnswerByQid(qid);
+                if(al.isEmpty()){
+                    String s = questionService.closeQuestion(qid, false);
+                    return ResponseEntity.ok(s);
+                }
+                else {
+                    String s = questionService.closeQuestion(qid, true);
+                    return ResponseEntity.ok(s);
+                }
             }
         }
     }
@@ -249,6 +277,36 @@ public class QuestionController {
         }
     }
 
+    @PostMapping("/editDetail/{qid}")
+    public ResponseEntity<String> editDetail(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody List<QuestionDetail> questionDetailList)
+            throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(questionDetailList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Detail list empty");
+        }
+        else {
+            if(user.getUid()==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+            }
+            else {
+                Question q = questionService.getQuestionByQid(qid);
+                if(!q.getUid().equals(user.getUid())){
+                    return ResponseEntity.ok("Access denied");
+                }
+                else {
+                    questionService.removeAllDetailByQid(qid);
+                    int i = 0;
+                    for(QuestionDetail qd : questionDetailList){
+                        qd.setQid(qid);
+                        questionService.createDetail(qd);
+                        i++;
+                    }
+                    return ResponseEntity.ok(String.valueOf(i));
+                }
+            }
+        }
+    }
+
     @GetMapping("/getQuestionDetailByQid/{qid}")
     public ResponseEntity<List<QuestionDetail>> getQuestionDetailByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         List<QuestionDetail> qdl = questionService.getQuestionDetailByQid(qid);
@@ -330,26 +388,39 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            QuestionReport report = new QuestionReport();
-            report.setUid(user.getUid());
-            report.setQid(qid);
-            report.setDetail(detail);
-            report.setStatus("Pending");
-            report.setDate(new Date());
-            String s = questionService.report(report);
-            return ResponseEntity.ok(s);
+            Question q = questionService.getQuestionByQid(qid);
+            if(q.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Can not report your own comment");
+            }
+            else {
+                QuestionReport report = new QuestionReport();
+                report.setUid(user.getUid());
+                report.setQid(qid);
+                report.setDetail(detail);
+                report.setStatus("Pending");
+                report.setDate(new Date());
+                String s = questionService.report(report);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
     @DeleteMapping("/deleteReport/{rqid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rqid") String rqid) {
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rqid") String rqid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            String s = questionService.deleteReport(rqid);
-            return ResponseEntity.ok(s);
+            String role = accountService.getUserClaims(ck);
+            QuestionReport qr = questionService.getReportByRqid(rqid);
+            if(!qr.getUid().equals(user.getUid()) && !role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                String s = questionService.deleteReport(rqid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
@@ -369,6 +440,23 @@ public class QuestionController {
                 dtoList.add(dto);
             }
             return ResponseEntity.ok(dtoList);
+        }
+    }
+
+    @GetMapping("/getUserReportValue/{qid}")
+    public ResponseEntity<String> getUserReportValue(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            QuestionReport qr = questionService.getReportByUidQid(user.getUid(), qid);
+            if(qr.getRqid()==null){
+                return ResponseEntity.ok("None");
+            }
+            else {
+                return ResponseEntity.ok(qr.getRqid());
+            }
         }
     }
 

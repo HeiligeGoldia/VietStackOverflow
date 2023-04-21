@@ -14,5 +14,6 @@ public class AnswerDTO {
     private List<AnswerDetail> answerDetails;
     private int answerVote;
     private User user;
+    private String voteValue;
 
 }
