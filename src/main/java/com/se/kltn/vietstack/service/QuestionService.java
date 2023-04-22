@@ -122,10 +122,16 @@ public class QuestionService {
         }
     }
 
-    public String delete(String qid) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> writeResult = db.collection("Question").document(qid).delete();
-        writeResult.get();
-        return "Question deleted";
+    public String delete(String qid) {
+        try {
+            ApiFuture<WriteResult> writeResult = db.collection("Question").document(qid).delete();
+            writeResult.get();
+            return "Question deleted";
+        } catch (InterruptedException e) {
+            return "Question not found";
+        } catch (ExecutionException e) {
+            return "Question not found";
+        }
     }
 
     public List<Question> getQidByTid(String tid) throws ExecutionException, InterruptedException {
@@ -204,10 +210,29 @@ public class QuestionService {
         return new QuestionTag();
     }
 
-    public String removeQuestionTag(QuestionTag questionTag) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> writeResult = db.collection("QuestionTag").document(questionTag.getTqid()).delete();
-        writeResult.get();
-        return "Tag removed";
+    public String removeQuestionTag(QuestionTag questionTag) {
+        try {
+            ApiFuture<WriteResult> writeResult = db.collection("QuestionTag").document(questionTag.getTqid()).delete();
+            writeResult.get();
+            return "Tag removed";
+        } catch (ExecutionException e) {
+            return "Tag not found";
+        } catch (InterruptedException e) {
+            return "Tag not found";
+        }
+    }
+
+    public String removeTagsByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionTag> qtl = getQuestionTagByQid(qid);
+        if(qtl.isEmpty()) {
+            return "Question tag null";
+        }
+        else {
+            for(QuestionTag qt : qtl) {
+                removeQuestionTag(qt);
+            }
+            return "All question tag removed";
+        }
     }
 
     //    ---------- Question Detail ----------
@@ -270,8 +295,14 @@ public class QuestionService {
         }
         else {
             for(QuestionDetail qd : qdl) {
-                ApiFuture<WriteResult> writeResult = db.collection("QuestionDetail").document(qd.getQdid()).delete();
-                writeResult.get();
+                try {
+                    ApiFuture<WriteResult> writeResult = db.collection("QuestionDetail").document(qd.getQdid()).delete();
+                    writeResult.get();
+                } catch (ExecutionException e) {
+                    return "Detail not found";
+                } catch (InterruptedException e) {
+                    return "Detail not found";
+                }
             }
             return "Details deleted";
         }
@@ -308,6 +339,18 @@ public class QuestionService {
         return new QuestionVote();
     }
 
+    public List<QuestionVote> getQuestionVoteByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionVote> ids = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionVote");
+        Query query = ref.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            ids.add(ds.toObject(QuestionVote.class));
+        }
+        return ids;
+    }
+
     public String removeQuestionVote(QuestionVote questionVote) {
         try{
             ApiFuture<WriteResult> writeResult = db.collection("QuestionVote").document(questionVote.getVqid()).delete();
@@ -317,6 +360,19 @@ public class QuestionService {
             return "Vote not found";
         } catch (InterruptedException e) {
             return "Vote not found";
+        }
+    }
+
+    public String removeQuestionVoteByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionVote> qvl = getQuestionVoteByQid(qid);
+        if(qvl.isEmpty()) {
+            return "Question vote null";
+        }
+        else {
+            for(QuestionVote qv : qvl) {
+                removeQuestionVote(qv);
+            }
+            return "All question vote removed";
         }
     }
 
@@ -435,6 +491,31 @@ public class QuestionService {
         }
     }
 
+    public String deleteHistoryByQahid(String qahid) {
+        try{
+            ApiFuture<WriteResult> writeResult = db.collection("QuestionVote").document(qahid).delete();
+            writeResult.get();
+            return "Activity history deleted";
+        } catch (ExecutionException e) {
+            return "Activity history not found";
+        } catch (InterruptedException e) {
+            return "Activity history not found";
+        }
+    }
+
+    public String deleteHistoryByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionActivityHistory> qal = getQuestionActivityHistory(qid);
+        if(qal.isEmpty()) {
+            return "Question history null";
+        }
+        else {
+            for(QuestionActivityHistory qa : qal) {
+                deleteHistoryByQahid(qa.getQahid());
+            }
+            return "All history deleted";
+        }
+    }
+
     //    ---------- Question Report ----------
 
     public String getLastRqid() throws ExecutionException, InterruptedException {
@@ -499,6 +580,18 @@ public class QuestionService {
         return new QuestionReport();
     }
 
+    public List<QuestionReport> getAllQuestionReportByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionReport> qrl = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            qrl.add(ds.toObject(QuestionReport.class));
+        }
+        return qrl;
+    }
+
     public String deleteReport(String rqid){
         try{
             ApiFuture<WriteResult> writeResult = db.collection("QuestionReport").document(rqid).delete();
@@ -508,6 +601,19 @@ public class QuestionService {
             return "Report not found";
         } catch (InterruptedException e) {
             return "Report not found";
+        }
+    }
+
+    public String deleteQuestionReportByQid(String qid) throws ExecutionException, InterruptedException {
+        List<QuestionReport> qrl = getAllQuestionReportByQid(qid);
+        if(qrl.isEmpty()) {
+            return "Question report null";
+        }
+        else {
+            for(QuestionReport qr : qrl) {
+                deleteReport(qr.getRqid());
+            }
+            return "All report deleted";
         }
     }
 
