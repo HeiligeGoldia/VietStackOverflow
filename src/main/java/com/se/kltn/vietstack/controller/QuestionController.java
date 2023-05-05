@@ -92,6 +92,23 @@ public class QuestionController {
         }
     }
 
+    @GetMapping("/checkUserAnswer/{qid}")
+    public ResponseEntity<String> checkUserAnswer(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            Answer a = answerService.getAnswerByUidQid(user.getUid(),qid);
+            if(a.getAid()!=null){
+                return ResponseEntity.ok(a.getAid());
+            }
+            else {
+                return ResponseEntity.ok("None");
+            }
+        }
+    }
+
     @PutMapping("/closeQuestion/{qid}")
     public ResponseEntity<String> closeQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
