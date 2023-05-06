@@ -207,6 +207,34 @@ public class QuestionController {
         return ResponseEntity.ok(dtoList);
     }
 
+    @DeleteMapping("/delete/{qid}")
+    public ResponseEntity<String> delete(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            Question q = questionService.getQuestionByQid(qid);
+            String role = accountService.getUserClaims(ck);
+            if (!q.getUid().equals(user.getUid()) && !role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
+            }
+            else {
+                questionService.deleteQuestionReportByQid(qid);
+                questionService.deleteHistoryByQid(qid);
+                questionService.removeQuestionVoteByQid(qid);
+                questionService.removeAllDetailByQid(qid);
+                questionService.removeTagsByQid(qid);
+                String s = questionService.delete(qid);
+
+//              delete answer
+
+                return ResponseEntity.ok(s);
+            }
+        }
+    }
+
     //    ---------- Question Tag ----------
 
     @PostMapping("/modifyTagPost/{qid}")
