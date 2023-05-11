@@ -427,7 +427,7 @@ public class QuestionController {
     //    ---------- Question Report ----------
 
     @PostMapping("/report/{qid}")
-    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody String detail) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody QuestionReport report) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -438,10 +438,8 @@ public class QuestionController {
                 return ResponseEntity.ok("Can not report your own comment");
             }
             else {
-                QuestionReport report = new QuestionReport();
                 report.setUid(user.getUid());
                 report.setQid(qid);
-                report.setDetail(detail);
                 report.setStatus("Pending");
                 report.setDate(new Date());
                 String s = questionService.report(report);

@@ -224,16 +224,14 @@ public class AnswerController {
     //    ---------- Answer Report ----------
 
     @PostMapping("/report/{aid}")
-    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody String detail) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody AnswerReport report) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            AnswerReport report = new AnswerReport();
             report.setUid(user.getUid());
             report.setAid(aid);
-            report.setDetail(detail);
             report.setStatus("Pending");
             report.setDate(new Date());
             String s = answerService.report(report);
