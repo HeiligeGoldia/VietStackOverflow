@@ -94,7 +94,7 @@ public class AnswerController {
                 List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
                 int av = answerService.getTotalVoteValue(a.getAid());
                 User u = userService.findByUid(a.getUid());
-                String vv = answerService.getUserVoteValue(u.getUid(), a.getAid());
+                String vv = answerService.getUserVoteValue(user.getUid(), a.getAid());
                 dto.setAnswerVote(av);
                 dto.setUser(u);
                 dto.setAnswer(a);

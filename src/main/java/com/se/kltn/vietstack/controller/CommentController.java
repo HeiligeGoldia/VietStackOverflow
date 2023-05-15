@@ -116,6 +116,12 @@ public class CommentController {
                 return ResponseEntity.ok("Access denied");
             }
             else {
+                List<CommentReport> crl = commentService.getReportByCid(cid);
+                for(CommentReport cr : crl) {
+                    cr.setCid("Bình luận đã bị xoá");
+                    cr.setStatus("Deleted");
+                    commentService.editReport(cr);
+                }
                 String s = commentService.deleteComment(cid);
                 return ResponseEntity.ok(s);
             }
@@ -138,7 +144,7 @@ public class CommentController {
             else {
                 report.setUid(user.getUid());
                 report.setCid(cid);
-                report.setStatus("Pending");
+                report.setStatus("Đang chờ xử lý");
                 report.setDate(new Date());
                 String s = commentService.report(report);
                 return ResponseEntity.ok(s);
@@ -163,6 +169,26 @@ public class CommentController {
         }
     }
 
+    @PutMapping("/editReport")
+    public ResponseEntity<String> editReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> crlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
+            } else {
+                for(String id : crlid){
+                    CommentReport c = commentService.getReportByRcid(id);
+                    c.setStatus("Đã xem xét");
+                }
+                return ResponseEntity.ok("Edited");
+            }
+        }
+    }
+
     @DeleteMapping("/deleteReport/{rcid}")
     public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
@@ -182,14 +208,33 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getUserReport")
-    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    @GetMapping("/getReportByCid/{cid}")
+    public ResponseEntity<List<CommentReportDTO>> getReportByCid(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<CommentReport> rl = commentService.getUserReport(user.getUid());
+            List<CommentReport> rl = commentService.getReportByCid(cid);
+            List<CommentReportDTO> dtoList = new ArrayList<>();
+            for (CommentReport r : rl){
+                CommentReportDTO dto = new CommentReportDTO();
+                dto.setCommentReport(r);
+                dto.setUser(userService.findByUid(user.getUid()));
+                dtoList.add(dto);
+            }
+            return ResponseEntity.ok(dtoList);
+        }
+    }
+
+    @GetMapping("/getUserReport/{uid}")
+    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<CommentReport> rl = commentService.getUserReport(uid);
             List<CommentReportDTO> dtoList = new ArrayList<>();
             for (CommentReport r : rl){
                 CommentReportDTO dto = new CommentReportDTO();

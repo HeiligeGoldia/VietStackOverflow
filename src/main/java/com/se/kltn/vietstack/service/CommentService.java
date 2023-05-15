@@ -158,10 +158,43 @@ public class CommentService {
         Query query = ref.whereEqualTo("uid", uid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
-            crl.add(ds.toObject(CommentReport.class));
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
         }
         return crl;
+    }
+
+    public List<CommentReport> getReportByCid(String cid) throws ExecutionException, InterruptedException {
+        List<CommentReport> crl = new ArrayList<>();
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref.whereEqualTo("cid", cid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
+        }
+
+        return crl;
+    }
+
+    public String editReport(CommentReport commentReport) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("CommentReport").document(commentReport.getRcid()).set(commentReport);
+        api.get();
+        return commentReport.getRcid();
     }
 
     public String deleteReport(String rcid) {

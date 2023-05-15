@@ -4,6 +4,9 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.se.kltn.vietstack.model.answer.*;
+import com.se.kltn.vietstack.model.comment.CommentReport;
+import com.se.kltn.vietstack.model.question.QuestionActivityHistory;
+import com.se.kltn.vietstack.model.question.QuestionVote;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,10 +62,7 @@ public class  AnswerService {
             return answer.getAid();
         }
         else {
-            a.setDate(answer.getDate());
-            ApiFuture<WriteResult> api = db.collection("Answer").document(a.getAid()).set(a);
-            api.get();
-            return a.getAid();
+            return "Already answer the question";
         }
     }
 
@@ -84,8 +84,15 @@ public class  AnswerService {
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
-            al.add(ds.toObject(Answer.class));
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            al.add(ref.document(String.valueOf(i)).get().get().toObject(Answer.class));
         }
         return al;
     }
@@ -113,7 +120,6 @@ public class  AnswerService {
             al.add(ds.toObject(Answer.class));
         }
         return al;
-
     }
 
     public int getTotalAnswerCountByQid(String qid) throws ExecutionException, InterruptedException {
@@ -121,6 +127,18 @@ public class  AnswerService {
         Query query = collection.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         return querySnapshot.get().size();
+    }
+
+    public String deleteAnswer(String aid){
+        try{
+            ApiFuture<WriteResult> writeResult = db.collection("Answer").document(aid).delete();
+            writeResult.get();
+            return "Answer deleted";
+        } catch (ExecutionException e) {
+            return "Answer not found";
+        } catch (InterruptedException e) {
+            return "Answer not found";
+        }
     }
 
     //    ---------- Answer Detail ----------
@@ -155,14 +173,45 @@ public class  AnswerService {
 
     public List<AnswerDetail> getAnswerDetailByAid(String aid) throws ExecutionException, InterruptedException {
         List<AnswerDetail> adl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("AnswerDetail");
         Query query = ref.whereEqualTo("aid", aid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs) {
-            adl.add(ds.toObject(AnswerDetail.class));
+        if(docs.isEmpty()){
+            return adl;
         }
-        return adl;
+        else {
+            for (QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+
+            for(Integer i : docId) {
+                adl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerDetail.class));
+            }
+            return adl;
+        }
+    }
+
+    public String removeAllDetailByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerDetail> adl = getAnswerDetailByAid(aid);
+        if(adl.isEmpty()) {
+            return "Details list empty!";
+        }
+        else {
+            for(AnswerDetail ad : adl) {
+                try {
+                    ApiFuture<WriteResult> writeResult = db.collection("AnswerDetail").document(ad.getAdid()).delete();
+                    writeResult.get();
+                } catch (ExecutionException e) {
+                    return "Detail not found";
+                } catch (InterruptedException e) {
+                    return "Detail not found";
+                }
+            }
+            return "Details deleted";
+        }
     }
 
     //    ---------- Answer Vote ----------
@@ -196,6 +245,18 @@ public class  AnswerService {
         return new AnswerVote();
     }
 
+    public List<AnswerVote> getAnswerVoteByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerVote> ids = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerVote");
+        Query query = ref.whereEqualTo("aid", aid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            ids.add(ds.toObject(AnswerVote.class));
+        }
+        return ids;
+    }
+
     public String removeAnswerVote(AnswerVote answerVote) {
         try{
             ApiFuture<WriteResult> writeResult = db.collection("AnswerVote").document(answerVote.getVaid()).delete();
@@ -205,6 +266,19 @@ public class  AnswerService {
             return "Vote not found";
         } catch (InterruptedException e) {
             return "Vote not found";
+        }
+    }
+
+    public String removeAnswerVoteByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerVote> avl = getAnswerVoteByAid(aid);
+        if(avl.isEmpty()) {
+            return "Answer vote null";
+        }
+        else {
+            for(AnswerVote av : avl) {
+                removeAnswerVote(av);
+            }
+            return "All answer vote removed";
         }
     }
 
@@ -290,6 +364,7 @@ public class  AnswerService {
 
     public List<AnswerActivityHistory> getAnswerActivityHistory(String aid) throws ExecutionException, InterruptedException {
         List<AnswerActivityHistory> aal = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("AnswerActivityHistory");
         Query query = ref.whereEqualTo("aid", aid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -298,10 +373,41 @@ public class  AnswerService {
             return aal;
         }
         else {
-            for (QueryDocumentSnapshot d : docs) {
-                aal.add(d.toObject(AnswerActivityHistory.class));
+            for (QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+
+            for(Integer i : docId) {
+                aal.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerActivityHistory.class));
             }
             return aal;
+        }
+    }
+
+
+    public String deleteHistoryByAahid(String aahid) {
+        try{
+            ApiFuture<WriteResult> writeResult = db.collection("AnswerActivityHistory").document(aahid).delete();
+            writeResult.get();
+            return "Activity history deleted";
+        } catch (ExecutionException e) {
+            return "Activity history not found";
+        } catch (InterruptedException e) {
+            return "Activity history not found";
+        }
+    }
+
+    public String deleteHistoryByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerActivityHistory> aal = getAnswerActivityHistory(aid);
+        if(aal.isEmpty()) {
+            return "Answer history null";
+        }
+        else {
+            for(AnswerActivityHistory aa : aal) {
+                deleteHistoryByAahid(aa.getAahid());
+            }
+            return "All history deleted";
         }
     }
 
@@ -325,14 +431,42 @@ public class  AnswerService {
         }
     }
 
-    public String report(AnswerReport answerReport) throws ExecutionException, InterruptedException {
-        int newRaid = Integer.parseInt(getLastRaid()) + 1;
-        String raid = String.valueOf(newRaid);
-        answerReport.setRaid(raid);
+    public AnswerReport getReportByRaid(String raid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref.whereEqualTo("raid", raid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(AnswerReport.class);
+        }
+        return new AnswerReport();
+    }
 
-        ApiFuture<WriteResult> api = db.collection("AnswerReport").document(answerReport.getRaid()).set(answerReport);
-        api.get();
-        return answerReport.getRaid();
+    public AnswerReport getReportByUidAid(String uid, String aid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("aid", aid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        for(QueryDocumentSnapshot ds : docs){
+            return ds.toObject(AnswerReport.class);
+        }
+        return new AnswerReport();
+    }
+
+    public String report(AnswerReport answerReport) throws ExecutionException, InterruptedException {
+        AnswerReport ar = getReportByUidAid(answerReport.getUid(), answerReport.getAid());
+        if(ar.getRaid()==null) {
+            int newRaid = Integer.parseInt(getLastRaid()) + 1;
+            String raid = String.valueOf(newRaid);
+            answerReport.setRaid(raid);
+
+            ApiFuture<WriteResult> api = db.collection("AnswerReport").document(answerReport.getRaid()).set(answerReport);
+            api.get();
+            return answerReport.getRaid();
+        }
+        else {
+            return "Already reported";
+        }
     }
 
     public List<AnswerReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
@@ -341,10 +475,43 @@ public class  AnswerService {
         Query query = ref.whereEqualTo("uid", uid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
-            arl.add(ds.toObject(AnswerReport.class));
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            arl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerReport.class));
         }
         return arl;
+    }
+
+    public List<AnswerReport> getReportByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerReport> arl = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref.whereEqualTo("aid", aid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            arl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerReport.class));
+        }
+
+        return arl;
+    }
+
+    public String editReport(AnswerReport answerReport) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("AnswerReport").document(answerReport.getRaid()).set(answerReport);
+        api.get();
+        return answerReport.getRaid();
     }
 
     public String deleteReport(String raid){

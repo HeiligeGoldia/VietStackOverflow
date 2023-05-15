@@ -103,6 +103,23 @@ public class UserController {
         }
     }
 
+    @GetMapping("/checkSaveQuestion/{qid}")
+    public ResponseEntity<String> checkSaveQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            Save sq = userService.getSavedQuestionByUidQid(user.getUid(), qid);
+            if(sq.getSid()==null) {
+                return ResponseEntity.ok("None");
+            }
+            else {
+                return ResponseEntity.ok(sq.getQid());
+            }
+        }
+    }
+
     //    ---------- Follow Tag ----------
 
     @PostMapping("/modifyFollowTags")

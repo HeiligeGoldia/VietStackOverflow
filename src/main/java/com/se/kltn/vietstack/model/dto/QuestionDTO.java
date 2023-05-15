@@ -15,5 +15,6 @@ public class QuestionDTO {
     private int questionVote;
     private int answerCount;
     private User user;
+    private boolean acceptAnswerAvailable;
 
 }

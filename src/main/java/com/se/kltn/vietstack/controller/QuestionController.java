@@ -148,6 +148,10 @@ public class QuestionController {
             }
             int qv = questionService.getTotalVoteValue(q.getQid());
             int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+            if(!acpa.isEmpty()){
+                questionDTO.setAcceptAnswerAvailable(true);
+            }
             User u = userService.findByUid(q.getUid());
             questionDTO.setQuestion(q);
             questionDTO.setTags(tags);
@@ -172,6 +176,10 @@ public class QuestionController {
             }
             int qv = questionService.getTotalVoteValue(q.getQid());
             int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+            if(!acpa.isEmpty()){
+                questionDTO.setAcceptAnswerAvailable(true);
+            }
             User u = userService.findByUid(q.getUid());
             questionDTO.setQuestion(q);
             questionDTO.setTags(tags);
@@ -196,6 +204,10 @@ public class QuestionController {
             }
             int qv = questionService.getTotalVoteValue(q.getQid());
             int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+            if(!acpa.isEmpty()){
+                questionDTO.setAcceptAnswerAvailable(true);
+            }
             User u = userService.findByUid(q.getUid());
             questionDTO.setQuestion(q);
             questionDTO.setTags(tags);

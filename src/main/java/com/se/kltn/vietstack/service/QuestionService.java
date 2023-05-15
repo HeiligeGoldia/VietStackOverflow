@@ -493,7 +493,7 @@ public class QuestionService {
 
     public String deleteHistoryByQahid(String qahid) {
         try{
-            ApiFuture<WriteResult> writeResult = db.collection("QuestionVote").document(qahid).delete();
+            ApiFuture<WriteResult> writeResult = db.collection("QuestionActivityHistory").document(qahid).delete();
             writeResult.get();
             return "Activity history deleted";
         } catch (ExecutionException e) {
