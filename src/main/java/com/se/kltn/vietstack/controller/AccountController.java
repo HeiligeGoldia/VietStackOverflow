@@ -34,6 +34,14 @@ public class AccountController {
 //        }
 //    }
 
+    @PostMapping("/dangky")
+    public ResponseEntity<String> dangky(@RequestBody User user) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        user.setRole("User");
+        userService.create(user);
+        accountService.userClaim(user.getUid());
+        return ResponseEntity.ok(user.getUid());
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> register1(@RequestBody Account account) throws FirebaseAuthException, ExecutionException, InterruptedException {
         if(userService.checkEmail(account.getEmail())){
