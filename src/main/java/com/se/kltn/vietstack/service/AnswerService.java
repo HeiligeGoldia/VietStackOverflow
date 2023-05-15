@@ -4,9 +4,6 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.se.kltn.vietstack.model.answer.*;
-import com.se.kltn.vietstack.model.comment.CommentReport;
-import com.se.kltn.vietstack.model.question.QuestionActivityHistory;
-import com.se.kltn.vietstack.model.question.QuestionVote;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -504,7 +501,6 @@ public class  AnswerService {
         for(Integer i : docId) {
             arl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerReport.class));
         }
-
         return arl;
     }
 

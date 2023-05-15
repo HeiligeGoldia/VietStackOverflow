@@ -1,5 +1,6 @@
 package com.se.kltn.vietstack.controller;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.answer.*;
 import com.se.kltn.vietstack.model.dto.AnswerActivityHistoryDTO;
 import com.se.kltn.vietstack.model.dto.AnswerDTO;
@@ -106,6 +107,12 @@ public class AnswerController {
         }
     }
 
+    @GetMapping("/getAnswerByAid/{aid}")
+    public ResponseEntity<Answer> getAnswerByAid(@PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
+        Answer a = answerService.getAnswerByAid(aid);
+        return ResponseEntity.ok(a);
+    }
+
     @GetMapping("/getAnswerByQid/{qid}")
     public ResponseEntity<List<Answer>> getAnswerByQid(@PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         List<Answer> la = answerService.getAnswerByQid(qid);
@@ -121,6 +128,33 @@ public class AnswerController {
         else {
             String s = answerService.acceptAnswer(aid);
             return ResponseEntity.ok(s);
+        }
+    }
+
+    @DeleteMapping("/deleteAnswer/{aid}")
+    public ResponseEntity<String> deleteAnswer(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            Answer a = answerService.getAnswerByAid(aid);
+            if (!a.getUid().equals(user.getUid()) && !role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
+            } else {
+                List<AnswerReport> arl = answerService.getReportByAid(aid);
+                for(AnswerReport ar : arl) {
+                    ar.setAid("Câu trả lời đã bị xoá");
+                    ar.setStatus("Đã xoá");
+                    answerService.editReport(ar);
+                }
+                answerService.deleteHistoryByAid(aid);
+                answerService.removeAnswerVoteByAid(aid);
+                answerService.removeAllDetailByAid(aid);
+                String s = answerService.deleteAnswer(aid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
@@ -145,6 +179,36 @@ public class AnswerController {
                     i++;
                 }
                 return ResponseEntity.ok(String.valueOf(i));
+            }
+        }
+    }
+
+    @PostMapping("/editDetail/{aid}")
+    public ResponseEntity<String> editDetail(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody List<AnswerDetail> answerDetailList)
+            throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(answerDetailList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Detail list empty");
+        }
+        else {
+            if(user.getUid()==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+            }
+            else {
+                Answer a = answerService.getAnswerByAid(aid);
+                if(!a.getUid().equals(user.getUid())){
+                    return ResponseEntity.ok("Access denied");
+                }
+                else {
+                    answerService.removeAllDetailByAid(aid);
+                    int i = 0;
+                    for(AnswerDetail ad : answerDetailList){
+                        ad.setAid(aid);
+                        answerService.createDetail(ad);
+                        i++;
+                    }
+                    return ResponseEntity.ok(String.valueOf(i));
+                }
             }
         }
     }
@@ -230,40 +294,112 @@ public class AnswerController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            report.setUid(user.getUid());
-            report.setAid(aid);
-            report.setStatus("Pending");
-            report.setDate(new Date());
-            String s = answerService.report(report);
-            return ResponseEntity.ok(s);
+            Answer a = answerService.getAnswerByAid(aid);
+            if(a.getUid().equals(user.getUid())){
+                return ResponseEntity.ok("Can not report your own comment");
+            }
+            else {
+                report.setUid(user.getUid());
+                report.setAid(aid);
+                report.setStatus("Đang chờ xử lý");
+                report.setDate(new Date());
+                String s = answerService.report(report);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
-    @DeleteMapping("/deleteReport/{raid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("raid") String raid) {
+    @GetMapping("/getUserReportValue/{aid}")
+    public ResponseEntity<String> getUserReportValue(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
-            String s = answerService.deleteReport(raid);
-            return ResponseEntity.ok(s);
+            AnswerReport ar = answerService.getReportByUidAid(user.getUid(), aid);
+            if(ar.getRaid()==null){
+                return ResponseEntity.ok("None");
+            }
+            else {
+                return ResponseEntity.ok(ar.getRaid());
+            }
         }
     }
 
-    @GetMapping("/getUserReport")
-    public ResponseEntity<List<AnswerReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    @PutMapping("/editReport")
+    public ResponseEntity<String> editReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> arlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
+            } else {
+                for(String id : arlid){
+                    AnswerReport a = answerService.getReportByRaid(id);
+                    a.setStatus("Đã xem xét");
+                    answerService.editReport(a);
+                }
+                return ResponseEntity.ok("Edited");
+            }
+        }
+    }
+
+    @DeleteMapping("/deleteReport")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            for(String raid : ids) {
+                AnswerReport a = answerService.getReportByRaid(raid);
+                if(!a.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                    return ResponseEntity.ok("Access denied");
+                }
+                else {
+                    answerService.deleteReport(raid);
+                }
+            }
+            return ResponseEntity.ok("All report deleted");
+        }
+    }
+
+    @GetMapping("/getReportByAid/{aid}")
+    public ResponseEntity<List<AnswerReportDTO>> getReportByAid(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<AnswerReport> rl = answerService.getUserReport(user.getUid());
+            List<AnswerReport> rl = answerService.getReportByAid(aid);
             List<AnswerReportDTO> dtoList = new ArrayList<>();
             for (AnswerReport r : rl){
                 AnswerReportDTO dto = new AnswerReportDTO();
                 dto.setAnswerReport(r);
-                dto.setUser(userService.findByUid(user.getUid()));
+                dto.setUser(userService.findByUid(r.getUid()));
+                dtoList.add(dto);
+            }
+            return ResponseEntity.ok(dtoList);
+        }
+    }
+
+    @GetMapping("/getUserReport/{uid}")
+    public ResponseEntity<List<AnswerReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<AnswerReport> rl = answerService.getUserReport(uid);
+            List<AnswerReportDTO> dtoList = new ArrayList<>();
+            for (AnswerReport r : rl){
+                AnswerReportDTO dto = new AnswerReportDTO();
+                dto.setAnswerReport(r);
+                dto.setUser(userService.findByUid(r.getUid()));
                 dtoList.add(dto);
             }
             return ResponseEntity.ok(dtoList);

@@ -119,7 +119,7 @@ public class CommentController {
                 List<CommentReport> crl = commentService.getReportByCid(cid);
                 for(CommentReport cr : crl) {
                     cr.setCid("Bình luận đã bị xoá");
-                    cr.setStatus("Deleted");
+                    cr.setStatus("Đã xoá");
                     commentService.editReport(cr);
                 }
                 String s = commentService.deleteComment(cid);
@@ -183,28 +183,31 @@ public class CommentController {
                 for(String id : crlid){
                     CommentReport c = commentService.getReportByRcid(id);
                     c.setStatus("Đã xem xét");
+                    commentService.editReport(c);
                 }
                 return ResponseEntity.ok("Edited");
             }
         }
     }
 
-    @DeleteMapping("/deleteReport/{rcid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteReport")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
             String role = accountService.getUserClaims(ck);
-            CommentReport c = commentService.getReportByRcid(rcid);
-            if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
-                return ResponseEntity.ok("Access denied");
+            for(String rcid : ids) {
+                CommentReport c = commentService.getReportByRcid(rcid);
+                if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                    return ResponseEntity.ok("Access denied");
+                }
+                else {
+                    commentService.deleteReport(rcid);
+                }
             }
-            else {
-                String s = commentService.deleteReport(rcid);
-                return ResponseEntity.ok(s);
-            }
+            return ResponseEntity.ok("All report deleted");
         }
     }
 
@@ -220,7 +223,7 @@ public class CommentController {
             for (CommentReport r : rl){
                 CommentReportDTO dto = new CommentReportDTO();
                 dto.setCommentReport(r);
-                dto.setUser(userService.findByUid(user.getUid()));
+                dto.setUser(userService.findByUid(r.getUid()));
                 dtoList.add(dto);
             }
             return ResponseEntity.ok(dtoList);
@@ -239,7 +242,7 @@ public class CommentController {
             for (CommentReport r : rl){
                 CommentReportDTO dto = new CommentReportDTO();
                 dto.setCommentReport(r);
-                dto.setUser(userService.findByUid(user.getUid()));
+                dto.setUser(userService.findByUid(r.getUid()));
                 dtoList.add(dto);
             }
             return ResponseEntity.ok(dtoList);

@@ -107,6 +107,7 @@ public class QuestionService {
 
     public List<Question> getQidByUid(String uid) throws ExecutionException, InterruptedException {
         List<Question> qtl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("Question");
         Query query = ref.whereEqualTo("uid", uid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -116,7 +117,12 @@ public class QuestionService {
         }
         else {
             for (QueryDocumentSnapshot d : docs) {
-                qtl.add(d.toObject(Question.class));
+                docId.add(Integer.parseInt(d.getId()));
+            }
+            Collections.sort(docId);
+
+            for(Integer i : docId) {
+                qtl.add(ref.document(String.valueOf(i)).get().get().toObject(Question.class));
             }
             return qtl;
         }
@@ -586,10 +592,23 @@ public class QuestionService {
         Query query = ref.whereEqualTo("qid", qid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs){
-            qrl.add(ds.toObject(QuestionReport.class));
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            qrl.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionReport.class));
         }
         return qrl;
+    }
+
+    public String editReport(QuestionReport questionReport) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("QuestionReport").document(questionReport.getRqid()).set(questionReport);
+        api.get();
+        return questionReport.getRqid();
     }
 
     public String deleteReport(String rqid){
@@ -601,19 +620,6 @@ public class QuestionService {
             return "Report not found";
         } catch (InterruptedException e) {
             return "Report not found";
-        }
-    }
-
-    public String deleteQuestionReportByQid(String qid) throws ExecutionException, InterruptedException {
-        List<QuestionReport> qrl = getAllQuestionReportByQid(qid);
-        if(qrl.isEmpty()) {
-            return "Question report null";
-        }
-        else {
-            for(QuestionReport qr : qrl) {
-                deleteReport(qr.getRqid());
-            }
-            return "All report deleted";
         }
     }
 
