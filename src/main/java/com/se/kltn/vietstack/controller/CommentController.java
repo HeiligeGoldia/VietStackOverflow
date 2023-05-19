@@ -229,6 +229,7 @@ public class CommentController {
                 for (CommentReport r : rl){
                     CommentReportDTO dto = new CommentReportDTO();
                     dto.setCommentReport(r);
+                    dto.setComment(commentService.getCommentByCid(r.getCid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -254,6 +255,7 @@ public class CommentController {
                 for (CommentReport r : rl){
                     CommentReportDTO dto = new CommentReportDTO();
                     dto.setCommentReport(r);
+                    dto.setComment(commentService.getCommentByCid(r.getCid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -279,6 +281,7 @@ public class CommentController {
                 for (CommentReport r : rl){
                     CommentReportDTO dto = new CommentReportDTO();
                     dto.setCommentReport(r);
+                    dto.setComment(commentService.getCommentByCid(r.getCid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }

@@ -279,12 +279,14 @@ public class QuestionController {
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 //        }
 //        else {
+//            List<QuestionDTO> dtoList = new ArrayList<>();
+//            List<Question> ql = new ArrayList<>();
 //            List<FollowTag> ftl = userService.getFollowTagByUid(user.getUid());
 //            for(FollowTag ft : ftl) {
+//                List<Question> questions = questionService.getQidByTid(ft.getTid());
 //
 //            }
-//            List<QuestionDTO> dtoList = new ArrayList<>();
-//            List<Question> questions = questionService.getQidByTid(tid);
+//
 //            for (Question q : questions){
 //                QuestionDTO questionDTO = new QuestionDTO();
 //                List<Tag> tags = new ArrayList<>();
