@@ -1,14 +1,14 @@
 package com.se.kltn.vietstack.controller;
 
+import com.se.kltn.vietstack.model.answer.Answer;
+import com.se.kltn.vietstack.model.dto.QuestionDTO;
 import com.se.kltn.vietstack.model.question.Question;
+import com.se.kltn.vietstack.model.question.QuestionTag;
 import com.se.kltn.vietstack.model.tag.Tag;
 import com.se.kltn.vietstack.model.user.FollowTag;
 import com.se.kltn.vietstack.model.user.Save;
 import com.se.kltn.vietstack.model.user.User;
-import com.se.kltn.vietstack.service.AccountService;
-import com.se.kltn.vietstack.service.QuestionService;
-import com.se.kltn.vietstack.service.TagService;
-import com.se.kltn.vietstack.service.UserService;
+import com.se.kltn.vietstack.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +33,9 @@ public class UserController {
 
     @Autowired
     private QuestionService questionService;
+
+    @Autowired
+    private AnswerService answerService;
 
     //    ---------- User ----------
 
@@ -88,18 +91,37 @@ public class UserController {
     }
 
     @GetMapping("/getUserSavedQuestion")
-    public ResponseEntity<List<Question>> getUserSavedQuestion(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<QuestionDTO>> getUserSavedQuestion(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<Question> ql = new ArrayList<>();
+            List<QuestionDTO> dtoList = new ArrayList<>();
             List<Save> sl = userService.getUserSavedQuestion(user.getUid());
             for(Save s : sl){
-                ql.add(questionService.getQuestionByQid(s.getQid()));
+                QuestionDTO questionDTO = new QuestionDTO();
+                Question q = questionService.getQuestionByQid(s.getQid());
+                List<Tag> tags = new ArrayList<>();
+                List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+                for (QuestionTag qt : qtags){
+                    tags.add(tagService.getTagByTid(qt.getTid()));
+                }
+                int qv = questionService.getTotalVoteValue(q.getQid());
+                int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+                List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+                if(!acpa.isEmpty()){
+                    questionDTO.setAcceptAnswerAvailable(true);
+                }
+                User u = userService.findByUid(q.getUid());
+                questionDTO.setQuestion(q);
+                questionDTO.setTags(tags);
+                questionDTO.setQuestionVote(qv);
+                questionDTO.setAnswerCount(ac);
+                questionDTO.setUser(u);
+                dtoList.add(questionDTO);
             }
-            return ResponseEntity.ok(ql);
+            return ResponseEntity.ok(dtoList);
         }
     }
 

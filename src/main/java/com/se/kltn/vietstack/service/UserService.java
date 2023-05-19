@@ -139,8 +139,15 @@ public class UserService {
         Query query = ref.whereEqualTo("uid", uid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs){
-            sl.add(ds.toObject(Save.class));
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            sl.add(ref.document(String.valueOf(i)).get().get().toObject(Save.class));
         }
         return sl;
     }
