@@ -53,6 +53,41 @@ public class QuestionService {
         return question.getQid();
     }
 
+    public List<Integer> getSearchQuestionTitle(String input) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Question");
+        Query query = ref.whereNotEqualTo("qid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            Question qs = ds.toObject(Question.class);
+            if(qs.getTitle().contains(input)){
+                docId.add(Integer.parseInt(qs.getQid()));
+            }
+        }
+        return docId;
+    }
+
+    public List<Integer> getSearchQuestionDetail(String input) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionDetail");
+        Query query = ref.whereNotEqualTo("qdid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            QuestionDetail qd = ds.toObject(QuestionDetail.class);
+            if(qd.getContent().contains(input)){
+                if(!docId.contains(qd.getQid())){
+                    docId.add(Integer.parseInt(qd.getQid()));
+//                    System.out.println(qd);
+                }
+            }
+        }
+        return docId;
+    }
+
     public List<Question> getAllQuestionList() throws ExecutionException, InterruptedException {
         List<Question> ql = new ArrayList<>();
         List<Integer> docId = new ArrayList<>();
@@ -67,7 +102,7 @@ public class QuestionService {
             for (QueryDocumentSnapshot ds : docs) {
                 docId.add(Integer.parseInt(ds.getId()));
             }
-            Collections.sort(docId);
+            Collections.sort(docId, Collections.reverseOrder());
             for(Integer i : docId) {
                 ql.add(ref.document(String.valueOf(i)).get().get().toObject(Question.class));
             }
@@ -119,7 +154,7 @@ public class QuestionService {
             for (QueryDocumentSnapshot d : docs) {
                 docId.add(Integer.parseInt(d.getId()));
             }
-            Collections.sort(docId);
+            Collections.sort(docId, Collections.reverseOrder());
 
             for(Integer i : docId) {
                 qtl.add(ref.document(String.valueOf(i)).get().get().toObject(Question.class));
@@ -142,6 +177,7 @@ public class QuestionService {
 
     public List<Question> getQidByTid(String tid) throws ExecutionException, InterruptedException {
         List<Question> qtl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("QuestionTag");
         Query query = ref.whereEqualTo("tid", tid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -152,7 +188,12 @@ public class QuestionService {
         else {
             for (QueryDocumentSnapshot d : docs) {
                 QuestionTag tag = d.toObject(QuestionTag.class);
-                qtl.add(getQuestionByQid(tag.getQid()));
+                docId.add(Integer.parseInt(tag.getQid()));
+            }
+            Collections.sort(docId, Collections.reverseOrder());
+
+            for(Integer i : docId) {
+                qtl.add(getQuestionByQid(String.valueOf(i)));
             }
             return qtl;
         }
@@ -542,28 +583,6 @@ public class QuestionService {
         }
     }
 
-    public String report(QuestionReport questionReport) throws ExecutionException, InterruptedException {
-        int newRqid = Integer.parseInt(getLastRqid()) + 1;
-        String rqid = String.valueOf(newRqid);
-        questionReport.setRqid(rqid);
-
-        ApiFuture<WriteResult> api = db.collection("QuestionReport").document(questionReport.getRqid()).set(questionReport);
-        api.get();
-        return questionReport.getRqid();
-    }
-
-    public List<QuestionReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
-        List<QuestionReport> qrl = new ArrayList<>();
-        CollectionReference ref = db.collection("QuestionReport");
-        Query query = ref.whereEqualTo("uid", uid);
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
-        for(QueryDocumentSnapshot ds : docs) {
-            qrl.add(ds.toObject(QuestionReport.class));
-        }
-        return qrl;
-    }
-
     public QuestionReport getReportByRqid(String rqid) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("QuestionReport");
         Query query = ref.whereEqualTo("rqid", rqid);
@@ -586,6 +605,63 @@ public class QuestionService {
         return new QuestionReport();
     }
 
+    public String report(QuestionReport questionReport) throws ExecutionException, InterruptedException {
+        QuestionReport qr = getReportByUidQid(questionReport.getUid(), questionReport.getQid());
+        if(qr.getRqid()==null){
+            int newRqid = Integer.parseInt(getLastRqid()) + 1;
+            String rqid = String.valueOf(newRqid);
+            questionReport.setRqid(rqid);
+
+            ApiFuture<WriteResult> api = db.collection("QuestionReport").document(questionReport.getRqid()).set(questionReport);
+            api.get();
+            return questionReport.getRqid();
+        }
+        else {
+            return "Already reported";
+        }
+    }
+
+    public List<QuestionReport> getQuestionReport() throws ExecutionException, InterruptedException {
+        List<QuestionReport> qrl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereNotEqualTo("rqid", 0);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return qrl;
+        }
+        else {
+            for(QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            for(Integer i : docId) {
+                qrl.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionReport.class));
+            }
+            return qrl;
+        }
+    }
+
+    public List<QuestionReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
+        List<QuestionReport> qrl = new ArrayList<>();
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereEqualTo("uid", uid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            docId.add(Integer.parseInt(ds.getId()));
+        }
+        Collections.sort(docId);
+
+        for(Integer i : docId) {
+            qrl.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionReport.class));
+        }
+        return qrl;
+    }
+
     public List<QuestionReport> getAllQuestionReportByQid(String qid) throws ExecutionException, InterruptedException {
         List<QuestionReport> qrl = new ArrayList<>();
         CollectionReference ref = db.collection("QuestionReport");
@@ -597,7 +673,7 @@ public class QuestionService {
         for(QueryDocumentSnapshot ds : docs) {
             docId.add(Integer.parseInt(ds.getId()));
         }
-        Collections.sort(docId);
+        Collections.sort(docId, Collections.reverseOrder());
 
         for(Integer i : docId) {
             qrl.add(ref.document(String.valueOf(i)).get().get().toObject(QuestionReport.class));

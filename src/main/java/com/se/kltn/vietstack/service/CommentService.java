@@ -152,6 +152,28 @@ public class CommentService {
         }
     }
 
+    public List<CommentReport> getCommentReport() throws ExecutionException, InterruptedException {
+        List<CommentReport> crl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref.whereNotEqualTo("rcid", 0);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return crl;
+        }
+        else {
+            for(QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            for(Integer i : docId) {
+                crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
+            }
+            return crl;
+        }
+    }
+
     public List<CommentReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
         List<CommentReport> crl = new ArrayList<>();
         CollectionReference ref = db.collection("CommentReport");
@@ -182,7 +204,7 @@ public class CommentService {
         for(QueryDocumentSnapshot ds : docs) {
             docId.add(Integer.parseInt(ds.getId()));
         }
-        Collections.sort(docId);
+        Collections.sort(docId, Collections.reverseOrder());
 
         for(Integer i : docId) {
             crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));

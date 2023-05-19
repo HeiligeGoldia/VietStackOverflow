@@ -144,7 +144,7 @@ public class UserService {
         for(QueryDocumentSnapshot ds : docs) {
             docId.add(Integer.parseInt(ds.getId()));
         }
-        Collections.sort(docId);
+        Collections.sort(docId, Collections.reverseOrder());
 
         for(Integer i : docId) {
             sl.add(ref.document(String.valueOf(i)).get().get().toObject(Save.class));

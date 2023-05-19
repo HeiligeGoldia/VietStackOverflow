@@ -74,7 +74,6 @@ public class CommentController {
                 return ResponseEntity.ok("Access denied");
             }
             else {
-                c.setDate(new Date());
                 c.setDetail(comment.getDetail());
                 c.setStatus("Modified");
                 String s = commentService.editComment(c);
@@ -211,41 +210,78 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getReportByCid/{cid}")
-    public ResponseEntity<List<CommentReportDTO>> getReportByCid(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getCommentReport")
+    public ResponseEntity<List<CommentReportDTO>> getCommentReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<CommentReport> rl = commentService.getReportByCid(cid);
-            List<CommentReportDTO> dtoList = new ArrayList<>();
-            for (CommentReport r : rl){
-                CommentReportDTO dto = new CommentReportDTO();
-                dto.setCommentReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<CommentReport> rl = commentService.getCommentReport();
+                List<CommentReportDTO> dtoList = new ArrayList<>();
+                for (CommentReport r : rl){
+                    CommentReportDTO dto = new CommentReportDTO();
+                    dto.setCommentReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
+        }
+    }
+
+    @GetMapping("/getReportByCid/{cid}")
+    public ResponseEntity<List<CommentReportDTO>> getReportByCid(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                List<CommentReport> rl = commentService.getReportByCid(cid);
+                List<CommentReportDTO> dtoList = new ArrayList<>();
+                for (CommentReport r : rl){
+                    CommentReportDTO dto = new CommentReportDTO();
+                    dto.setCommentReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<CommentReport> rl = commentService.getUserReport(uid);
-            List<CommentReportDTO> dtoList = new ArrayList<>();
-            for (CommentReport r : rl){
-                CommentReportDTO dto = new CommentReportDTO();
-                dto.setCommentReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!user.getUid().equals(uid) && !role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<CommentReport> rl = commentService.getUserReport(uid);
+                List<CommentReportDTO> dtoList = new ArrayList<>();
+                for (CommentReport r : rl){
+                    CommentReportDTO dto = new CommentReportDTO();
+                    dto.setCommentReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 

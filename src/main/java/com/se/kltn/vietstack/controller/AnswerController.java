@@ -368,41 +368,78 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getReportByAid/{aid}")
-    public ResponseEntity<List<AnswerReportDTO>> getReportByAid(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getAnswerReport")
+    public ResponseEntity<List<AnswerReportDTO>> getAnswerReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<AnswerReport> rl = answerService.getReportByAid(aid);
-            List<AnswerReportDTO> dtoList = new ArrayList<>();
-            for (AnswerReport r : rl){
-                AnswerReportDTO dto = new AnswerReportDTO();
-                dto.setAnswerReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<AnswerReport> rl = answerService.getAnswerReport();
+                List<AnswerReportDTO> dtoList = new ArrayList<>();
+                for (AnswerReport r : rl){
+                    AnswerReportDTO dto = new AnswerReportDTO();
+                    dto.setAnswerReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
+        }
+    }
+
+    @GetMapping("/getReportByAid/{aid}")
+    public ResponseEntity<List<AnswerReportDTO>> getReportByAid(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                List<AnswerReport> rl = answerService.getReportByAid(aid);
+                List<AnswerReportDTO> dtoList = new ArrayList<>();
+                for (AnswerReport r : rl){
+                    AnswerReportDTO dto = new AnswerReportDTO();
+                    dto.setAnswerReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<AnswerReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<AnswerReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<AnswerReport> rl = answerService.getUserReport(uid);
-            List<AnswerReportDTO> dtoList = new ArrayList<>();
-            for (AnswerReport r : rl){
-                AnswerReportDTO dto = new AnswerReportDTO();
-                dto.setAnswerReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!user.getUid().equals(uid) && !role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<AnswerReport> rl = answerService.getUserReport(uid);
+                List<AnswerReportDTO> dtoList = new ArrayList<>();
+                for (AnswerReport r : rl){
+                    AnswerReportDTO dto = new AnswerReportDTO();
+                    dto.setAnswerReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 

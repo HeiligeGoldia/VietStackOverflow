@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -139,6 +140,51 @@ public class QuestionController {
                 }
             }
         }
+    }
+
+    @GetMapping("/findQuestion")
+    public ResponseEntity<List<QuestionDTO>> findQuestion(@RequestBody String input) throws ExecutionException, InterruptedException {
+        List<Integer> ids1 = questionService.getSearchQuestionTitle(input);
+        List<Integer> ids2 = questionService.getSearchQuestionDetail(input);
+        List<Integer> ids3 = answerService.getSearchAnswerDetail(input);
+
+        for(Integer id1 : ids2){
+            if(!ids1.contains(id1)){
+                ids1.add(id1);
+            }
+        }
+        for(Integer id2 : ids3){
+            if(!ids1.contains(id2)){
+                ids1.add(id2);
+            }
+        }
+        Collections.sort(ids1, Collections.reverseOrder());
+
+        List<QuestionDTO> dtoList = new ArrayList<>();
+        for(Integer id : ids1){
+            QuestionDTO questionDTO = new QuestionDTO();
+            Question q = questionService.getQuestionByQid(String.valueOf(id));
+            List<Tag> tags = new ArrayList<>();
+            List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+            for (QuestionTag qt : qtags){
+                tags.add(tagService.getTagByTid(qt.getTid()));
+            }
+            int qv = questionService.getTotalVoteValue(q.getQid());
+            int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+            List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+            if(!acpa.isEmpty()){
+                questionDTO.setAcceptAnswerAvailable(true);
+            }
+            User u = userService.findByUid(q.getUid());
+            questionDTO.setQuestion(q);
+            questionDTO.setTags(tags);
+            questionDTO.setQuestionVote(qv);
+            questionDTO.setAnswerCount(ac);
+            questionDTO.setUser(u);
+            dtoList.add(questionDTO);
+        }
+
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/getAllQuestionDTO")
@@ -553,41 +599,78 @@ public class QuestionController {
         }
     }
 
-    @GetMapping("/getReportByQid/{qid}")
-    public ResponseEntity<List<QuestionReportDTO>> getReportByAid(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getQuestionReport")
+    public ResponseEntity<List<QuestionReportDTO>> getQuestionReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<QuestionReport> rl = questionService.getAllQuestionReportByQid(qid);
-            List<QuestionReportDTO> dtoList = new ArrayList<>();
-            for (QuestionReport r : rl){
-                QuestionReportDTO dto = new QuestionReportDTO();
-                dto.setQuestionReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<QuestionReport> rl = questionService.getQuestionReport();
+                List<QuestionReportDTO> dtoList = new ArrayList<>();
+                for (QuestionReport r : rl){
+                    QuestionReportDTO dto = new QuestionReportDTO();
+                    dto.setQuestionReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
+        }
+    }
+
+    @GetMapping("/getReportByQid/{qid}")
+    public ResponseEntity<List<QuestionReportDTO>> getReportByQid(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                List<QuestionReport> rl = questionService.getAllQuestionReportByQid(qid);
+                List<QuestionReportDTO> dtoList = new ArrayList<>();
+                for (QuestionReport r : rl){
+                    QuestionReportDTO dto = new QuestionReportDTO();
+                    dto.setQuestionReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<QuestionReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<QuestionReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         else {
-            List<QuestionReport> rl = questionService.getUserReport(uid);
-            List<QuestionReportDTO> dtoList = new ArrayList<>();
-            for (QuestionReport r : rl){
-                QuestionReportDTO dto = new QuestionReportDTO();
-                dto.setQuestionReport(r);
-                dto.setUser(userService.findByUid(r.getUid()));
-                dtoList.add(dto);
+            String role = accountService.getUserClaims(ck);
+            if (!user.getUid().equals(uid) && !role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.ok(dtoList);
+            else {
+                List<QuestionReport> rl = questionService.getUserReport(uid);
+                List<QuestionReportDTO> dtoList = new ArrayList<>();
+                for (QuestionReport r : rl){
+                    QuestionReportDTO dto = new QuestionReportDTO();
+                    dto.setQuestionReport(r);
+                    dto.setUser(userService.findByUid(r.getUid()));
+                    dtoList.add(dto);
+                }
+                return ResponseEntity.ok(dtoList);
+            }
         }
     }
 

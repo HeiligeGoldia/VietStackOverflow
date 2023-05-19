@@ -75,6 +75,26 @@ public class  AnswerService {
         return new Answer();
     }
 
+    public List<Integer> getSearchAnswerDetail(String input) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerDetail");
+        Query query = ref.whereNotEqualTo("adid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        List<Integer> docId = new ArrayList<>();
+        for(QueryDocumentSnapshot ds : docs) {
+            AnswerDetail ad = ds.toObject(AnswerDetail.class);
+            if(ad.getContent().contains(input)){
+                Answer a = getAnswerByAid(ad.getAid());
+                if(!docId.contains(a.getQid())){
+                    docId.add(Integer.parseInt(a.getQid()));
+//                    System.out.println(ad);
+                }
+            }
+        }
+        return docId;
+    }
+
     public List<Answer> getAnswerByQid(String qid) throws ExecutionException, InterruptedException {
         List<Answer> al = new ArrayList<>();
         CollectionReference ref = db.collection("Answer");
@@ -466,6 +486,28 @@ public class  AnswerService {
         }
     }
 
+    public List<AnswerReport> getAnswerReport() throws ExecutionException, InterruptedException {
+        List<AnswerReport> arl = new ArrayList<>();
+        List<Integer> docId = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref.whereNotEqualTo("raid", 0);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        if(docs.isEmpty()){
+            return arl;
+        }
+        else {
+            for(QueryDocumentSnapshot ds : docs) {
+                docId.add(Integer.parseInt(ds.getId()));
+            }
+            Collections.sort(docId);
+            for(Integer i : docId) {
+                arl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerReport.class));
+            }
+            return arl;
+        }
+    }
+
     public List<AnswerReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
         List<AnswerReport> arl = new ArrayList<>();
         CollectionReference ref = db.collection("AnswerReport");
@@ -496,7 +538,7 @@ public class  AnswerService {
         for(QueryDocumentSnapshot ds : docs) {
             docId.add(Integer.parseInt(ds.getId()));
         }
-        Collections.sort(docId);
+        Collections.sort(docId, Collections.reverseOrder());
 
         for(Integer i : docId) {
             arl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerReport.class));
