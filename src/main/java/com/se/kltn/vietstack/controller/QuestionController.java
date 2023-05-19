@@ -272,45 +272,51 @@ public class QuestionController {
         return ResponseEntity.ok(dtoList);
     }
 
-//    @GetMapping("/getQuestionDTOByUserTag")
-//    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByUserTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
-//        User user = accountService.verifySC(ck);
-//        if(user.getUid()==null){
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
-//        else {
-//            List<QuestionDTO> dtoList = new ArrayList<>();
-//            List<Question> ql = new ArrayList<>();
-//            List<FollowTag> ftl = userService.getFollowTagByUid(user.getUid());
-//            for(FollowTag ft : ftl) {
-//                List<Question> questions = questionService.getQidByTid(ft.getTid());
-//
-//            }
-//
-//            for (Question q : questions){
-//                QuestionDTO questionDTO = new QuestionDTO();
-//                List<Tag> tags = new ArrayList<>();
-//                List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
-//                for (QuestionTag qt : qtags){
-//                    tags.add(tagService.getTagByTid(qt.getTid()));
-//                }
-//                int qv = questionService.getTotalVoteValue(q.getQid());
-//                int ac = answerService.getTotalAnswerCountByQid(q.getQid());
-//                List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
-//                if(!acpa.isEmpty()){
-//                    questionDTO.setAcceptAnswerAvailable(true);
-//                }
-//                User u = userService.findByUid(q.getUid());
-//                questionDTO.setQuestion(q);
-//                questionDTO.setTags(tags);
-//                questionDTO.setQuestionVote(qv);
-//                questionDTO.setAnswerCount(ac);
-//                questionDTO.setUser(u);
-//                dtoList.add(questionDTO);
-//            }
-//            return ResponseEntity.ok(dtoList);
-//        }
-//    }
+    @GetMapping("/getQuestionDTOByUserTag")
+    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByUserTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            List<QuestionDTO> dtoList = new ArrayList<>();
+            List<Integer> ids = new ArrayList<>();
+            List<FollowTag> ftl = userService.getFollowTagByUid(user.getUid());
+            for(FollowTag ft : ftl) {
+                List<Question> questions = questionService.getQidByTid(ft.getTid());
+                for(Question q : questions) {
+                    if(!ids.contains(Integer.parseInt(q.getQid()))) {
+                        ids.add(Integer.parseInt(q.getQid()));
+                    }
+                }
+            }
+            Collections.sort(ids, Collections.reverseOrder());
+
+            for (Integer id : ids){
+                QuestionDTO questionDTO = new QuestionDTO();
+                Question q = questionService.getQuestionByQid(String.valueOf(id));
+                List<Tag> tags = new ArrayList<>();
+                List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+                for (QuestionTag qt : qtags){
+                    tags.add(tagService.getTagByTid(qt.getTid()));
+                }
+                int qv = questionService.getTotalVoteValue(q.getQid());
+                int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+                List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+                if(!acpa.isEmpty()){
+                    questionDTO.setAcceptAnswerAvailable(true);
+                }
+                User u = userService.findByUid(q.getUid());
+                questionDTO.setQuestion(q);
+                questionDTO.setTags(tags);
+                questionDTO.setQuestionVote(qv);
+                questionDTO.setAnswerCount(ac);
+                questionDTO.setUser(u);
+                dtoList.add(questionDTO);
+            }
+            return ResponseEntity.ok(dtoList);
+        }
+    }
 
     @DeleteMapping("/delete/{qid}")
     public ResponseEntity<String> delete(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid)
