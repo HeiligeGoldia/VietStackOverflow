@@ -156,7 +156,7 @@ public class CommentService {
         List<CommentReport> crl = new ArrayList<>();
         List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereNotEqualTo("rcid", 0);
+        Query query = ref.whereNotEqualTo("rcid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         if(docs.isEmpty()){

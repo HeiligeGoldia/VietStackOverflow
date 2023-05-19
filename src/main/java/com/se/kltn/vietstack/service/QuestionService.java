@@ -625,7 +625,7 @@ public class QuestionService {
         List<QuestionReport> qrl = new ArrayList<>();
         List<Integer> docId = new ArrayList<>();
         CollectionReference ref = db.collection("QuestionReport");
-        Query query = ref.whereNotEqualTo("rqid", 0);
+        Query query = ref.whereNotEqualTo("rqid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         if(docs.isEmpty()){
