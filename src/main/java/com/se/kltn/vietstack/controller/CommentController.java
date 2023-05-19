@@ -181,8 +181,10 @@ public class CommentController {
             } else {
                 for(String id : crlid){
                     CommentReport c = commentService.getReportByRcid(id);
-                    c.setStatus("Đã xem xét");
-                    commentService.editReport(c);
+                    if(!c.getCid().equals("Bình luận đã bị xoá")){
+                        c.setStatus("Đã xem xét");
+                        commentService.editReport(c);
+                    }
                 }
                 return ResponseEntity.ok("Edited");
             }

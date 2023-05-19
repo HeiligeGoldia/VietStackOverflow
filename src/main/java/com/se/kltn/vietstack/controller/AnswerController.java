@@ -339,8 +339,10 @@ public class AnswerController {
             } else {
                 for(String id : arlid){
                     AnswerReport a = answerService.getReportByRaid(id);
-                    a.setStatus("Đã xem xét");
-                    answerService.editReport(a);
+                    if(!a.getAid().equals("Câu trả lời đã bị xoá")){
+                        a.setStatus("Đã xem xét");
+                        answerService.editReport(a);
+                    }
                 }
                 return ResponseEntity.ok("Edited");
             }
@@ -385,6 +387,7 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
+                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -410,6 +413,7 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
+                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -435,6 +439,7 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
+                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }

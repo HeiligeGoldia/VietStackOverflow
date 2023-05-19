@@ -10,6 +10,7 @@ import com.se.kltn.vietstack.model.dto.QuestionDTO;
 import com.se.kltn.vietstack.model.dto.QuestionReportDTO;
 import com.se.kltn.vietstack.model.question.*;
 import com.se.kltn.vietstack.model.tag.Tag;
+import com.se.kltn.vietstack.model.user.FollowTag;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -273,30 +274,40 @@ public class QuestionController {
 
 //    @GetMapping("/getQuestionDTOByUserTag")
 //    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByUserTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
-//        List<QuestionDTO> dtoList = new ArrayList<>();
-//        List<Question> questions = questionService.getQidByTid(tid);
-//        for (Question q : questions){
-//            QuestionDTO questionDTO = new QuestionDTO();
-//            List<Tag> tags = new ArrayList<>();
-//            List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
-//            for (QuestionTag qt : qtags){
-//                tags.add(tagService.getTagByTid(qt.getTid()));
-//            }
-//            int qv = questionService.getTotalVoteValue(q.getQid());
-//            int ac = answerService.getTotalAnswerCountByQid(q.getQid());
-//            List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
-//            if(!acpa.isEmpty()){
-//                questionDTO.setAcceptAnswerAvailable(true);
-//            }
-//            User u = userService.findByUid(q.getUid());
-//            questionDTO.setQuestion(q);
-//            questionDTO.setTags(tags);
-//            questionDTO.setQuestionVote(qv);
-//            questionDTO.setAnswerCount(ac);
-//            questionDTO.setUser(u);
-//            dtoList.add(questionDTO);
+//        User user = accountService.verifySC(ck);
+//        if(user.getUid()==null){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 //        }
-//        return ResponseEntity.ok(dtoList);
+//        else {
+//            List<FollowTag> ftl = userService.getFollowTagByUid(user.getUid());
+//            for(FollowTag ft : ftl) {
+//
+//            }
+//            List<QuestionDTO> dtoList = new ArrayList<>();
+//            List<Question> questions = questionService.getQidByTid(tid);
+//            for (Question q : questions){
+//                QuestionDTO questionDTO = new QuestionDTO();
+//                List<Tag> tags = new ArrayList<>();
+//                List<QuestionTag> qtags = questionService.getQuestionTagByQid(q.getQid());
+//                for (QuestionTag qt : qtags){
+//                    tags.add(tagService.getTagByTid(qt.getTid()));
+//                }
+//                int qv = questionService.getTotalVoteValue(q.getQid());
+//                int ac = answerService.getTotalAnswerCountByQid(q.getQid());
+//                List<Answer> acpa = answerService.getAcceptAnswerByQid(q.getQid());
+//                if(!acpa.isEmpty()){
+//                    questionDTO.setAcceptAnswerAvailable(true);
+//                }
+//                User u = userService.findByUid(q.getUid());
+//                questionDTO.setQuestion(q);
+//                questionDTO.setTags(tags);
+//                questionDTO.setQuestionVote(qv);
+//                questionDTO.setAnswerCount(ac);
+//                questionDTO.setUser(u);
+//                dtoList.add(questionDTO);
+//            }
+//            return ResponseEntity.ok(dtoList);
+//        }
 //    }
 
     @DeleteMapping("/delete/{qid}")
@@ -598,8 +609,10 @@ public class QuestionController {
             } else {
                 for(String id : qrlid){
                     QuestionReport q = questionService.getReportByRqid(id);
-                    q.setStatus("Đã xem xét");
-                    questionService.editReport(q);
+                    if(!q.getQid().equals("Câu hỏi đã bị xoá")){
+                        q.setStatus("Đã xem xét");
+                        questionService.editReport(q);
+                    }
                 }
                 return ResponseEntity.ok("Edited");
             }
