@@ -6,10 +6,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.se.kltn.vietstack.model.question.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -198,6 +195,43 @@ public class QuestionService {
             return qtl;
         }
     }
+
+    public int getSlQuestionTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Question");
+        Query query = ref.whereNotEqualTo("qid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlQuestionInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("Question");
+        Query query = ref.whereNotEqualTo("qid", "0")
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+//    public HashMap getSlQuestionInYear(int year) throws ExecutionException, InterruptedException {
+//        HashMap qiy = new HashMap();
+//        for(int i = 1; i < 12; i++) {
+//            getSlQuestionInMonthYear()
+//        }
+//    }
 
     //    ---------- Question Tag ----------
 
