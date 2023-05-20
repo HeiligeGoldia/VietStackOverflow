@@ -228,24 +228,22 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/deleteReport")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteReport/{rcid}")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
             String role = accountService.getUserClaims(ck);
-            for(String rcid : ids) {
-                CommentReport c = commentService.getReportByRcid(rcid);
-                if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
-                    return ResponseEntity.ok("Access denied");
-                }
-                else {
-                    commentService.deleteReport(rcid);
-                }
+            CommentReport c = commentService.getReportByRcid(rcid);
+            if(!c.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                return ResponseEntity.ok("Access denied");
             }
-            return ResponseEntity.ok("All report deleted");
+            else {
+                String s = commentService.deleteReport(rcid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 

@@ -676,24 +676,22 @@ public class QuestionController {
         }
     }
 
-    @DeleteMapping("/deleteReport")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteReport/{rqid}")
+    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rqid") String rqid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
         }
         else {
             String role = accountService.getUserClaims(ck);
-            for(String rqid : ids) {
-                QuestionReport qr = questionService.getReportByRqid(rqid);
-                if(!qr.getUid().equals(user.getUid()) && !role.equals("Admin")) {
-                    return ResponseEntity.ok("Access denied");
-                }
-                else {
-                    questionService.deleteReport(rqid);
-                }
+            QuestionReport qr = questionService.getReportByRqid(rqid);
+            if(!qr.getUid().equals(user.getUid()) && !role.equals("Admin")) {
+                return ResponseEntity.ok("Access denied");
             }
-            return ResponseEntity.ok("All report deleted");
+            else {
+                String s = questionService.deleteReport(rqid);
+                return ResponseEntity.ok(s);
+            }
         }
     }
 
