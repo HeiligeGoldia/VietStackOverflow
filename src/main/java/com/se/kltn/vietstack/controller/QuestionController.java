@@ -271,7 +271,7 @@ public class QuestionController {
     }
 
     @GetMapping("/getQuestionDTOByUserTag")
-    public ResponseEntity<List<QuestionDTO>> getQuestionDTOByUserTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    public ResponseEntity<?> getQuestionDTOByUserTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -312,6 +312,8 @@ public class QuestionController {
                 questionDTO.setUser(u);
                 dtoList.add(questionDTO);
             }
+            if(dtoList.isEmpty())
+                return ResponseEntity.ok("User follow tag list empty");
             return ResponseEntity.ok(dtoList);
         }
     }
