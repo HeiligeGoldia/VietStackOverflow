@@ -20,6 +20,14 @@ public class UserService {
 
     //    ---------- User ----------
 
+    public int countUser() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("User");
+        Query query = ref.whereNotEqualTo("uid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
     public boolean checkEmail(String email) throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("User");
         Query query = ref.whereEqualTo("email", email);

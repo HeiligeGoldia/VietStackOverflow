@@ -1,5 +1,6 @@
 package com.se.kltn.vietstack.controller;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.dto.QuestionDTO;
 import com.se.kltn.vietstack.model.question.Question;
@@ -38,6 +39,22 @@ public class UserController {
     private AnswerService answerService;
 
     //    ---------- User ----------
+
+    @GetMapping("/countUser")
+    public ResponseEntity<Integer> countUser(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            } else {
+                return ResponseEntity.ok(userService.countUser());
+            }
+        }
+    }
 
     @GetMapping("/findByUid/{uid}")
     public ResponseEntity<User> findByUid(@PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
