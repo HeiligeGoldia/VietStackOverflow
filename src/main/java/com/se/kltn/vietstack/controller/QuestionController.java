@@ -141,7 +141,7 @@ public class QuestionController {
     }
 
     @GetMapping("/findQuestion/{input}")
-    public ResponseEntity<List<QuestionDTO>> findQuestion(@PathVariable("input") String input) throws ExecutionException, InterruptedException {
+    public ResponseEntity<?> findQuestion(@PathVariable("input") String input) throws ExecutionException, InterruptedException {
         List<Integer> ids1 = questionService.getSearchQuestionTitle(input);
         List<Integer> ids2 = questionService.getSearchQuestionDetail(input);
         List<Integer> ids3 = answerService.getSearchAnswerDetail(input);
@@ -181,7 +181,8 @@ public class QuestionController {
             questionDTO.setUser(u);
             dtoList.add(questionDTO);
         }
-
+        if(dtoList.isEmpty())
+            return ResponseEntity.ok("Question not found");
         return ResponseEntity.ok(dtoList);
     }
 
