@@ -387,7 +387,8 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
-                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
+                    Answer a = answerService.getAnswerByAid(r.getAid());
+                    dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -413,7 +414,8 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
-                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
+                    Answer a = answerService.getAnswerByAid(r.getAid());
+                    dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -443,7 +445,8 @@ public class AnswerController {
                     for (AnswerReport r : rl){
                         AnswerReportDTO dto = new AnswerReportDTO();
                         dto.setAnswerReport(r);
-                        dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
+                        Answer a = answerService.getAnswerByAid(r.getAid());
+                        dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
                         dto.setUser(userService.findByUid(r.getUid()));
                         dtoList.add(dto);
                     }
