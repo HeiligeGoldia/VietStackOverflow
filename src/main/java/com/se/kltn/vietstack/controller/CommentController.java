@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -123,6 +124,42 @@ public class CommentController {
                 }
                 String s = commentService.deleteComment(cid);
                 return ResponseEntity.ok(s);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalComment")
+    public ResponseEntity<Integer> getTotalComment(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = commentService.getSlCommentTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalCommentYear/{year}")
+    public ResponseEntity<HashMap> getTotalCommentYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = commentService.getSlCommentInYear(year);
+                return ResponseEntity.ok(hm);
             }
         }
     }
@@ -294,6 +331,42 @@ public class CommentController {
                     }
                     return ResponseEntity.ok(dtoList);
                 }
+            }
+        }
+    }
+
+    @GetMapping("/getTotalCommentReport")
+    public ResponseEntity<Integer> getTotalCommentReport(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = commentService.getSlCommentReportTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalCommentReportYear/{year}")
+    public ResponseEntity<HashMap> getTotalCommentReportYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = commentService.getSlCommentReportInYear(year);
+                return ResponseEntity.ok(hm);
             }
         }
     }

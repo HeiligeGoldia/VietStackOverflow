@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -158,6 +159,42 @@ public class AnswerController {
         }
     }
 
+    @GetMapping("/getTotalAnswer")
+    public ResponseEntity<Integer> getTotalAnswer(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = answerService.getSlAnswerTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalAnswerYear/{year}")
+    public ResponseEntity<HashMap> getTotalAnswerYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = answerService.getSlAnswerInYear(year);
+                return ResponseEntity.ok(hm);
+            }
+        }
+    }
+
     //    ---------- Answer Detail ----------
 
     @PostMapping("/createDetail/{aid}")
@@ -251,6 +288,22 @@ public class AnswerController {
         else {
             String val = answerService.getUserVoteValue(user.getUid(), aid);
             return ResponseEntity.ok(val);
+        }
+    }
+
+    @GetMapping("/getTotalVote")
+    public ResponseEntity<Integer> getTotalVote(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            } else {
+                int sl = answerService.getTotalVote();
+                return ResponseEntity.ok(sl);
+            }
         }
     }
 
@@ -452,6 +505,42 @@ public class AnswerController {
                     }
                     return ResponseEntity.ok(dtoList);
                 }
+            }
+        }
+    }
+
+    @GetMapping("/getTotalAnswerReport")
+    public ResponseEntity<Integer> getTotalAnswerReport(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = answerService.getSlAnswerReportTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalAnswerReportYear/{year}")
+    public ResponseEntity<HashMap> getTotalAnswerReportYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = answerService.getSlAnswerReportInYear(year);
+                return ResponseEntity.ok(hm);
             }
         }
     }

@@ -7,9 +7,7 @@ import com.se.kltn.vietstack.model.comment.Comment;
 import com.se.kltn.vietstack.model.comment.CommentReport;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -92,6 +90,45 @@ public class CommentService {
         } catch (InterruptedException e) {
             return "Comment not found";
         }
+    }
+
+    public int getSlCommentTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Comment");
+        Query query = ref.whereNotEqualTo("rcid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlCommentInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("Comment");
+        Query query = ref
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public HashMap getSlCommentInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlCommentInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
     }
 
     //    ---------- Comment Report ----------
@@ -229,6 +266,45 @@ public class CommentService {
         } catch (InterruptedException e) {
             return "Report not found";
         }
+    }
+
+    public int getSlCommentReportTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref.whereNotEqualTo("rcid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlCommentReportInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("CommentReport");
+        Query query = ref
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public HashMap getSlCommentReportInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlCommentReportInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
     }
 
 }

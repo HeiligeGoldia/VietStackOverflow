@@ -521,6 +521,14 @@ public class QuestionService {
         }
     }
 
+    public int getTotalVote() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionVote");
+        Query query = ref.whereNotEqualTo("vqid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
     //    ---------- Question Activity History ----------
 
     public String getLastQahid() throws ExecutionException, InterruptedException {
@@ -733,6 +741,45 @@ public class QuestionService {
         } catch (InterruptedException e) {
             return "Report not found";
         }
+    }
+
+    public int getSlQuestionReportTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref.whereNotEqualTo("rqid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlQuestionReportInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("QuestionReport");
+        Query query = ref
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public HashMap getSlQuestionReportInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlQuestionReportInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
     }
 
 }

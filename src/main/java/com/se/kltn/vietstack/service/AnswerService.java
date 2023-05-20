@@ -6,10 +6,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.se.kltn.vietstack.model.answer.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -231,6 +228,45 @@ public class  AnswerService {
         }
     }
 
+    public int getSlAnswerTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("Answer");
+        Query query = ref.whereNotEqualTo("raid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlAnswerInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("Answer");
+        Query query = ref
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public HashMap getSlAnswerInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlAnswerInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
+    }
+
     //    ---------- Answer Vote ----------
 
     public String getLastVaid() throws ExecutionException, InterruptedException {
@@ -347,6 +383,14 @@ public class  AnswerService {
         else {
             return av.getValue();
         }
+    }
+
+    public int getTotalVote() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerVote");
+        Query query = ref.whereNotEqualTo("vaid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
     }
 
     //    ---------- Answer Activity History ----------
@@ -562,6 +606,45 @@ public class  AnswerService {
         } catch (InterruptedException e) {
             return "Report not found";
         }
+    }
+
+    public int getSlAnswerReportTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref.whereNotEqualTo("raid", "0");
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public int getSlAnswerReportInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date dateBegin = calendar.getTime();
+
+        int lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
+        Date dateEnd = calendar.getTime();
+
+        CollectionReference ref = db.collection("AnswerReport");
+        Query query = ref
+                .whereGreaterThanOrEqualTo("date", dateBegin)
+                .whereLessThanOrEqualTo("date", dateEnd);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
+
+    public HashMap getSlAnswerReportInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlAnswerReportInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
     }
 
 }

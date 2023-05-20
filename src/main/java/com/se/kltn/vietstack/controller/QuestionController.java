@@ -565,6 +565,22 @@ public class QuestionController {
         }
     }
 
+    @GetMapping("/getTotalVote")
+    public ResponseEntity<Integer> getTotalVote(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            } else {
+                int sl = questionService.getTotalVote();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
     //    ---------- Question Activity History ----------
 
     @GetMapping("/getQuestionActivityHistory/{qid}")
@@ -760,6 +776,42 @@ public class QuestionController {
                     }
                     return ResponseEntity.ok(dtoList);
                 }
+            }
+        }
+    }
+
+    @GetMapping("/getTotalQuestionReport")
+    public ResponseEntity<Integer> getTotalQuestionReport(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = questionService.getSlQuestionReportTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalQuestionYearReport/{year}")
+    public ResponseEntity<HashMap> getTotalQuestionYearReport(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = questionService.getSlQuestionReportInYear(year);
+                return ResponseEntity.ok(hm);
             }
         }
     }
