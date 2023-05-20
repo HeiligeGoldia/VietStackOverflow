@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -37,6 +38,23 @@ public class TagController {
         }
         else {
             return ResponseEntity.ok(t);
+        }
+    }
+
+    @GetMapping("/getMapSlPostByTag")
+    public ResponseEntity<HashMap> getMapSlPostByTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            } else {
+                HashMap h = tagService.getMapSlPostByTag();
+                return ResponseEntity.ok(h);
+            }
         }
     }
 

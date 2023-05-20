@@ -423,7 +423,7 @@ public class AnswerController {
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<AnswerReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    public ResponseEntity<?> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -435,15 +435,20 @@ public class AnswerController {
             }
             else {
                 List<AnswerReport> rl = answerService.getUserReport(uid);
-                List<AnswerReportDTO> dtoList = new ArrayList<>();
-                for (AnswerReport r : rl){
-                    AnswerReportDTO dto = new AnswerReportDTO();
-                    dto.setAnswerReport(r);
-                    dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
-                    dto.setUser(userService.findByUid(r.getUid()));
-                    dtoList.add(dto);
+                if(rl.isEmpty()){
+                    return ResponseEntity.ok("List report empty");
                 }
-                return ResponseEntity.ok(dtoList);
+                else {
+                    List<AnswerReportDTO> dtoList = new ArrayList<>();
+                    for (AnswerReport r : rl){
+                        AnswerReportDTO dto = new AnswerReportDTO();
+                        dto.setAnswerReport(r);
+                        dto.setAnswer(answerService.getAnswerByAid(r.getAid()));
+                        dto.setUser(userService.findByUid(r.getUid()));
+                        dtoList.add(dto);
+                    }
+                    return ResponseEntity.ok(dtoList);
+                }
             }
         }
     }

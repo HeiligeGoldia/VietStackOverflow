@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -84,7 +85,23 @@ public class TagService {
         }
     }
 
+    public int getSlPostByTag(String tid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("QuestionTag");
+        Query query = ref.whereEqualTo("tid", tid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+        return docs.size();
+    }
 
+    public HashMap getMapSlPostByTag() throws ExecutionException, InterruptedException {
+        HashMap map = new HashMap();
+        List<Tag> tl = getAllTag();
+        for(Tag t : tl) {
+            int sl = getSlPostByTag(t.getTid());
+            map.put(t.getName(), sl);
+        }
+        return map;
+    }
 
     public Tag getTagByTid(String tid) throws ExecutionException, InterruptedException {
         Tag tag;

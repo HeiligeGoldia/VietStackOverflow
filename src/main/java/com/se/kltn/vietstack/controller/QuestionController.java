@@ -607,7 +607,7 @@ public class QuestionController {
         else {
             Question q = questionService.getQuestionByQid(qid);
             if(q.getUid().equals(user.getUid())){
-                return ResponseEntity.ok("Can not report your own comment");
+                return ResponseEntity.ok("Can not report your own question");
             }
             else {
                 report.setUid(user.getUid());
@@ -734,7 +734,7 @@ public class QuestionController {
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<QuestionReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    public ResponseEntity<?> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -746,15 +746,20 @@ public class QuestionController {
             }
             else {
                 List<QuestionReport> rl = questionService.getUserReport(uid);
-                List<QuestionReportDTO> dtoList = new ArrayList<>();
-                for (QuestionReport r : rl){
-                    QuestionReportDTO dto = new QuestionReportDTO();
-                    dto.setQuestionReport(r);
-                    dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
-                    dto.setUser(userService.findByUid(r.getUid()));
-                    dtoList.add(dto);
+                if(rl.isEmpty()){
+                    return ResponseEntity.ok("List report empty");
                 }
-                return ResponseEntity.ok(dtoList);
+                else {
+                    List<QuestionReportDTO> dtoList = new ArrayList<>();
+                    for (QuestionReport r : rl){
+                        QuestionReportDTO dto = new QuestionReportDTO();
+                        dto.setQuestionReport(r);
+                        dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                        dto.setUser(userService.findByUid(r.getUid()));
+                        dtoList.add(dto);
+                    }
+                    return ResponseEntity.ok(dtoList);
+                }
             }
         }
     }

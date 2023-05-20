@@ -265,7 +265,7 @@ public class CommentController {
     }
 
     @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<List<CommentReportDTO>> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    public ResponseEntity<?> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -277,15 +277,20 @@ public class CommentController {
             }
             else {
                 List<CommentReport> rl = commentService.getUserReport(uid);
-                List<CommentReportDTO> dtoList = new ArrayList<>();
-                for (CommentReport r : rl){
-                    CommentReportDTO dto = new CommentReportDTO();
-                    dto.setCommentReport(r);
-                    dto.setComment(commentService.getCommentByCid(r.getCid()));
-                    dto.setUser(userService.findByUid(r.getUid()));
-                    dtoList.add(dto);
+                if(rl.isEmpty()){
+                    return ResponseEntity.ok("List report empty");
                 }
-                return ResponseEntity.ok(dtoList);
+                else {
+                    List<CommentReportDTO> dtoList = new ArrayList<>();
+                    for (CommentReport r : rl){
+                        CommentReportDTO dto = new CommentReportDTO();
+                        dto.setCommentReport(r);
+                        dto.setComment(commentService.getCommentByCid(r.getCid()));
+                        dto.setUser(userService.findByUid(r.getUid()));
+                        dtoList.add(dto);
+                    }
+                    return ResponseEntity.ok(dtoList);
+                }
             }
         }
     }
