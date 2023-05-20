@@ -140,8 +140,8 @@ public class QuestionController {
         }
     }
 
-    @GetMapping("/findQuestion")
-    public ResponseEntity<List<QuestionDTO>> findQuestion(@RequestBody String input) throws ExecutionException, InterruptedException {
+    @GetMapping("/findQuestion/{input}")
+    public ResponseEntity<List<QuestionDTO>> findQuestion(@PathVariable("input") String input) throws ExecutionException, InterruptedException {
         List<Integer> ids1 = questionService.getSearchQuestionTitle(input);
         List<Integer> ids2 = questionService.getSearchQuestionDetail(input);
         List<Integer> ids3 = answerService.getSearchAnswerDetail(input);
