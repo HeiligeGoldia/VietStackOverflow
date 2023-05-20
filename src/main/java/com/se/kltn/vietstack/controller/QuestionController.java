@@ -18,10 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -315,6 +312,42 @@ public class QuestionController {
                 dtoList.add(questionDTO);
             }
             return ResponseEntity.ok(dtoList);
+        }
+    }
+
+    @GetMapping("/getTotalQuestion")
+    public ResponseEntity<Integer> getTotalQuestion(@CookieValue("sessionCookie") String ck)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                int sl = questionService.getSlQuestionTotal();
+                return ResponseEntity.ok(sl);
+            }
+        }
+    }
+
+    @GetMapping("/getTotalQuestionYear/{year}")
+    public ResponseEntity<HashMap> getTotalQuestionYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+            throws ExecutionException, InterruptedException, FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if (user.getUid() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            String role = accountService.getUserClaims(ck);
+            if (!role.equals("Admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            else {
+                HashMap hm = questionService.getSlQuestionInYear(year);
+                return ResponseEntity.ok(hm);
+            }
         }
     }
 

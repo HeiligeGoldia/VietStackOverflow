@@ -23,16 +23,16 @@ public class AccountController {
     @Autowired
     private UserService userService;
 
-//    @GetMapping("/getUserClaims")
-//    public ResponseEntity<String> getUserClaims(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException {
-//        User user = accountService.verifySC(ck);
-//        if(user.getUid()==null){
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
-//        }
-//        else {
-//            return ResponseEntity.ok(accountService.getUserClaims(ck));
-//        }
-//    }
+    @GetMapping("/getUserClaims")
+    public ResponseEntity<String> getUserClaims(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            return ResponseEntity.ok(accountService.getUserClaims(ck));
+        }
+    }
 
     @PostMapping("/dangky")
     public ResponseEntity<String> dangky(@RequestBody User user) throws ExecutionException, InterruptedException, FirebaseAuthException {

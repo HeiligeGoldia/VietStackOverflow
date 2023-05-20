@@ -218,7 +218,7 @@ public class QuestionService {
         Date dateEnd = calendar.getTime();
 
         CollectionReference ref = db.collection("Question");
-        Query query = ref.whereNotEqualTo("qid", "0")
+        Query query = ref
                 .whereGreaterThanOrEqualTo("date", dateBegin)
                 .whereLessThanOrEqualTo("date", dateEnd);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -226,12 +226,14 @@ public class QuestionService {
         return docs.size();
     }
 
-//    public HashMap getSlQuestionInYear(int year) throws ExecutionException, InterruptedException {
-//        HashMap qiy = new HashMap();
-//        for(int i = 1; i < 12; i++) {
-//            getSlQuestionInMonthYear()
-//        }
-//    }
+    public HashMap getSlQuestionInYear(int year) throws ExecutionException, InterruptedException {
+        HashMap qiy = new HashMap();
+        for(int i = 1; i <= 12; i++) {
+            int slq = getSlQuestionInMonthYear(i, year);
+            qiy.put(i, slq);
+        }
+        return qiy;
+    }
 
     //    ---------- Question Tag ----------
 
