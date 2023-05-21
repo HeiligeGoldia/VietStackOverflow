@@ -421,6 +421,27 @@ public class AnswerController {
         }
     }
 
+    @DeleteMapping("/deleteListReport")
+    public ResponseEntity<String> deleteListReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+        User user = accountService.verifySC(ck);
+        if(user.getUid()==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
+        }
+        else {
+            String role = accountService.getUserClaims(ck);
+            for (String raid : ids) {
+                AnswerReport a = answerService.getReportByRaid(raid);
+                if(!a.getUid().equals(user.getUid()) && !role.equals("Admin")){
+                    return ResponseEntity.ok("Access denied");
+                }
+                else {
+                    answerService.deleteReport(raid);
+                }
+            }
+            return ResponseEntity.ok("All report deleted");
+        }
+    }
+
     @GetMapping("/getAnswerReport")
     public ResponseEntity<List<AnswerReportDTO>> getAnswerReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
