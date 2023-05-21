@@ -285,9 +285,11 @@ public class CommentController {
                 for (CommentReport r : rl){
                     CommentReportDTO dto = new CommentReportDTO();
                     dto.setCommentReport(r);
-                    Comment c = commentService.getCommentByCid(r.getCid());
-                    dto.setComment(c);
-                    dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                    if(!r.getCid().equals("Bình luận đã bị xoá")) {
+                        Comment c = commentService.getCommentByCid(r.getCid());
+                        dto.setComment(c);
+                        dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -313,9 +315,11 @@ public class CommentController {
                 for (CommentReport r : rl){
                     CommentReportDTO dto = new CommentReportDTO();
                     dto.setCommentReport(r);
-                    Comment c = commentService.getCommentByCid(r.getCid());
-                    dto.setComment(c);
-                    dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                    if(!r.getCid().equals("Bình luận đã bị xoá")) {
+                        Comment c = commentService.getCommentByCid(r.getCid());
+                        dto.setComment(c);
+                        dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -345,9 +349,11 @@ public class CommentController {
                     for (CommentReport r : rl){
                         CommentReportDTO dto = new CommentReportDTO();
                         dto.setCommentReport(r);
-                        Comment c = commentService.getCommentByCid(r.getCid());
-                        dto.setComment(c);
-                        dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                        if(!r.getCid().equals("Bình luận đã bị xoá")) {
+                            Comment c = commentService.getCommentByCid(r.getCid());
+                            dto.setComment(c);
+                            dto.setQuestion(questionService.getQuestionByQid(c.getQid()));
+                        }
                         dto.setUser(userService.findByUid(r.getUid()));
                         dtoList.add(dto);
                     }

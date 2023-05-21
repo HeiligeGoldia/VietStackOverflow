@@ -459,8 +459,10 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
-                    Answer a = answerService.getAnswerByAid(r.getAid());
-                    dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                    if(!r.getAid().equals("Câu trả lời đã bị xoá")){
+                        Answer a = answerService.getAnswerByAid(r.getAid());
+                        dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -486,8 +488,10 @@ public class AnswerController {
                 for (AnswerReport r : rl){
                     AnswerReportDTO dto = new AnswerReportDTO();
                     dto.setAnswerReport(r);
-                    Answer a = answerService.getAnswerByAid(r.getAid());
-                    dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                    if(!r.getAid().equals("Câu trả lời đã bị xoá")){
+                        Answer a = answerService.getAnswerByAid(r.getAid());
+                        dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -517,8 +521,10 @@ public class AnswerController {
                     for (AnswerReport r : rl){
                         AnswerReportDTO dto = new AnswerReportDTO();
                         dto.setAnswerReport(r);
-                        Answer a = answerService.getAnswerByAid(r.getAid());
-                        dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                        if(!r.getAid().equals("Câu trả lời đã bị xoá")){
+                            Answer a = answerService.getAnswerByAid(r.getAid());
+                            dto.setQuestion(questionService.getQuestionByQid(a.getQid()));
+                        }
                         dto.setUser(userService.findByUid(r.getUid()));
                         dtoList.add(dto);
                     }

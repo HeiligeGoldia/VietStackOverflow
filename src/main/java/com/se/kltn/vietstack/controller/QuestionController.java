@@ -736,7 +736,9 @@ public class QuestionController {
                 for (QuestionReport r : rl){
                     QuestionReportDTO dto = new QuestionReportDTO();
                     dto.setQuestionReport(r);
-                    dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                    if(!r.getQid().equals("Câu trả lời đã bị xoá")) {
+                        dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -762,7 +764,9 @@ public class QuestionController {
                 for (QuestionReport r : rl){
                     QuestionReportDTO dto = new QuestionReportDTO();
                     dto.setQuestionReport(r);
-                    dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                    if(!r.getQid().equals("Câu trả lời đã bị xoá")) {
+                        dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                    }
                     dto.setUser(userService.findByUid(r.getUid()));
                     dtoList.add(dto);
                 }
@@ -792,7 +796,9 @@ public class QuestionController {
                     for (QuestionReport r : rl){
                         QuestionReportDTO dto = new QuestionReportDTO();
                         dto.setQuestionReport(r);
-                        dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                        if(!r.getQid().equals("Câu trả lời đã bị xoá")) {
+                            dto.setQuestion(questionService.getQuestionByQid(r.getQid()));
+                        }
                         dto.setUser(userService.findByUid(r.getUid()));
                         dtoList.add(dto);
                     }
