@@ -1,15 +1,4 @@
-#
-# Build stage
-#
-FROM maven:3.9.2-jdk-11 AS build
-COPY . .
-RUN mvn clean package -Pprod -DskipTests
-
-#
-# Package stage
-#
-FROM openjdk:11-jdk-slim
-COPY --from=build /target/vietstack-0.0.1-SNAPSHOT.jar vietstack.jar
-# ENV PORT=8080
+FROM openjdk:8
 EXPOSE 8080
+ADD target/vietstack.jar vietstack.jar
 ENTRYPOINT ["java","-jar","vietstack.jar"]
