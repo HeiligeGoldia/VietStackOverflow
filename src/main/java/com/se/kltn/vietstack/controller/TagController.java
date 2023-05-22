@@ -41,8 +41,8 @@ public class TagController {
         }
     }
 
-    @GetMapping("/getMapSlPostByTag")
-    public ResponseEntity<HashMap> getMapSlPostByTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getMapSlPostByTag/{sessionCookie}")
+    public ResponseEntity<HashMap> getMapSlPostByTag(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -58,8 +58,8 @@ public class TagController {
         }
     }
 
-    @PostMapping("/addTag")
-    public ResponseEntity<String> addTag(@CookieValue("sessionCookie") String ck, @RequestBody Tag tag) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PostMapping("/addTag/{sessionCookie}")
+    public ResponseEntity<String> addTag(@PathVariable("sessionCookie") String ck, @RequestBody Tag tag) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -76,8 +76,8 @@ public class TagController {
         }
     }
 
-    @PutMapping("/editTag/{tid}")
-    public ResponseEntity<String> editTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid, @RequestBody Tag tag) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PutMapping("/editTag/{tid}/{sessionCookie}")
+    public ResponseEntity<String> editTag(@PathVariable("sessionCookie") String ck, @PathVariable("tid") String tid, @RequestBody Tag tag) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -101,8 +101,8 @@ public class TagController {
         }
     }
 
-    @DeleteMapping("/deleteTag/{tid}")
-    public ResponseEntity<String> deleteTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteTag/{tid}/{sessionCookie}")
+    public ResponseEntity<String> deleteTag(@PathVariable("sessionCookie") String ck, @PathVariable("tid") String tid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");

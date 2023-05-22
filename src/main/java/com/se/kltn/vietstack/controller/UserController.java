@@ -40,8 +40,8 @@ public class UserController {
 
     //    ---------- User ----------
 
-    @GetMapping("/countUser")
-    public ResponseEntity<Integer> countUser(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/countUser/{sessionCookie}")
+    public ResponseEntity<Integer> countUser(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/findByUid/{uid}")
-    public ResponseEntity<User> findByUid(@PathVariable("uid") String uid) throws ExecutionException, InterruptedException {
+    public ResponseEntity<User> findByUid(@PathVariable("uid") String uid) {
         User user = userService.findByUid(uid);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(user);
@@ -67,8 +67,8 @@ public class UserController {
         }
     }
 
-    @PutMapping("/updateUser")
-    public ResponseEntity<String> updateUser(@CookieValue("sessionCookie") String ck, @RequestBody User newUser) throws ExecutionException, InterruptedException {
+    @PutMapping("/updateUser/{sessionCookie}")
+    public ResponseEntity<String> updateUser(@PathVariable("sessionCookie") String ck, @RequestBody User newUser) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -91,8 +91,8 @@ public class UserController {
 
     //    ---------- Save ----------
 
-    @PostMapping("/saveQuestion/{qid}")
-    public ResponseEntity<String> saveQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid)
+    @PostMapping("/saveQuestion/{qid}/{sessionCookie}")
+    public ResponseEntity<String> saveQuestion(@PathVariable("sessionCookie") String ck, @PathVariable("qid") String qid)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -107,8 +107,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getUserSavedQuestion")
-    public ResponseEntity<List<QuestionDTO>> getUserSavedQuestion(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    @GetMapping("/getUserSavedQuestion/{sessionCookie}")
+    public ResponseEntity<List<QuestionDTO>> getUserSavedQuestion(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -142,8 +142,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkSaveQuestion/{qid}")
-    public ResponseEntity<String> checkSaveQuestion(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+    @GetMapping("/checkSaveQuestion/{qid}/{sessionCookie}")
+    public ResponseEntity<String> checkSaveQuestion(@PathVariable("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -161,8 +161,8 @@ public class UserController {
 
     //    ---------- Follow Tag ----------
 
-    @PostMapping("/modifyFollowTags")
-    public ResponseEntity<String> modifyFollowTags(@CookieValue("sessionCookie") String ck, @RequestBody List<Tag> tags) throws ExecutionException, InterruptedException {
+    @PostMapping("/modifyFollowTags/{sessionCookie}")
+    public ResponseEntity<String> modifyFollowTags(@PathVariable("sessionCookie") String ck, @RequestBody List<Tag> tags) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -215,8 +215,8 @@ public class UserController {
         }
     }
 
-    @PostMapping("/modifyFollowTag/{tid}")
-    public ResponseEntity<String> modifyFollowTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
+    @PostMapping("/modifyFollowTag/{tid}/{sessionCookie}")
+    public ResponseEntity<String> modifyFollowTag(@PathVariable("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -237,8 +237,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkFollowTag/{tid}")
-    public ResponseEntity<String> checkFollowTag(@CookieValue("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
+    @GetMapping("/checkFollowTag/{tid}/{sessionCookie}")
+    public ResponseEntity<String> checkFollowTag(@PathVariable("sessionCookie") String ck, @PathVariable("tid") String tid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -254,8 +254,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getUserFollowTag")
-    public ResponseEntity<List<Tag>> getUserFollowTag(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException {
+    @GetMapping("/getUserFollowTag/{sessionCookie}")
+    public ResponseEntity<List<Tag>> getUserFollowTag(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException {
         List<Tag> tl = new ArrayList<>();
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){

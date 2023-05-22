@@ -40,8 +40,8 @@ public class CommentController {
 
     //    ---------- Comment ----------
 
-    @PostMapping("/create/{qid}")
-    public ResponseEntity<String> create(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody Comment comment)
+    @PostMapping("/create/{qid}/{sessionCookie}")
+    public ResponseEntity<String> create(@PathVariable("sessionCookie") String ck, @PathVariable("qid") String qid, @RequestBody Comment comment)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -63,8 +63,8 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/edit/{cid}")
-    public ResponseEntity<String> edit(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody Comment comment) throws ExecutionException, InterruptedException {
+    @PutMapping("/edit/{cid}/{sessionCookie}")
+    public ResponseEntity<String> edit(@PathVariable("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody Comment comment) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -103,8 +103,8 @@ public class CommentController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @DeleteMapping("/deleteComment/{cid}")
-    public ResponseEntity<String> deleteComment(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @DeleteMapping("/deleteComment/{cid}/{sessionCookie}")
+    public ResponseEntity<String> deleteComment(@PathVariable("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -128,8 +128,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getTotalComment")
-    public ResponseEntity<Integer> getTotalComment(@CookieValue("sessionCookie") String ck)
+    @GetMapping("/getTotalComment/{sessionCookie}")
+    public ResponseEntity<Integer> getTotalComment(@PathVariable("sessionCookie") String ck)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -146,8 +146,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getTotalCommentYear/{year}")
-    public ResponseEntity<HashMap> getTotalCommentYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+    @GetMapping("/getTotalCommentYear/{year}/{sessionCookie}")
+    public ResponseEntity<HashMap> getTotalCommentYear(@PathVariable("sessionCookie") String ck, @PathVariable("year") int year)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -166,8 +166,8 @@ public class CommentController {
 
     //    ---------- Comment Report ----------
 
-    @PostMapping("/report/{cid}")
-    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody CommentReport report) throws ExecutionException, InterruptedException {
+    @PostMapping("/report/{cid}/{sessionCookie}")
+    public ResponseEntity<String> report(@PathVariable("sessionCookie") String ck, @PathVariable("cid") String cid, @RequestBody CommentReport report) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -188,8 +188,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getUserReportValue/{cid}")
-    public ResponseEntity<String> getUserReportValue(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getUserReportValue/{cid}/{sessionCookie}")
+    public ResponseEntity<String> getUserReportValue(@PathVariable("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -205,8 +205,8 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/editReport")
-    public ResponseEntity<String> editReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> crlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PutMapping("/editReport/{sessionCookie}")
+    public ResponseEntity<String> editReport(@PathVariable("sessionCookie") String ck, @RequestBody List<String> crlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -228,8 +228,8 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/deleteReport/{rcid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteReport/{rcid}/{sessionCookie}")
+    public ResponseEntity<String> deleteReport(@PathVariable("sessionCookie") String ck, @PathVariable("rcid") String rcid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -247,8 +247,8 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/deleteListReport")
-    public ResponseEntity<String> deleteListReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteListReport/{sessionCookie}")
+    public ResponseEntity<String> deleteListReport(@PathVariable("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -268,8 +268,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getCommentReport")
-    public ResponseEntity<List<CommentReportDTO>> getCommentReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getCommentReport/{sessionCookie}")
+    public ResponseEntity<List<CommentReportDTO>> getCommentReport(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -298,8 +298,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getReportByCid/{cid}")
-    public ResponseEntity<List<CommentReportDTO>> getReportByCid(@CookieValue("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getReportByCid/{cid}/{sessionCookie}")
+    public ResponseEntity<List<CommentReportDTO>> getReportByCid(@PathVariable("sessionCookie") String ck, @PathVariable("cid") String cid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -328,8 +328,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<?> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getUserReport/{uid}/{sessionCookie}")
+    public ResponseEntity<?> getUserReport(@PathVariable("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -363,8 +363,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getTotalCommentReport")
-    public ResponseEntity<Integer> getTotalCommentReport(@CookieValue("sessionCookie") String ck)
+    @GetMapping("/getTotalCommentReport/{sessionCookie}")
+    public ResponseEntity<Integer> getTotalCommentReport(@PathVariable("sessionCookie") String ck)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -381,8 +381,8 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/getTotalCommentReportYear/{year}")
-    public ResponseEntity<HashMap> getTotalCommentReportYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+    @GetMapping("/getTotalCommentReportYear/{year}/{sessionCookie}")
+    public ResponseEntity<HashMap> getTotalCommentReportYear(@PathVariable("sessionCookie") String ck, @PathVariable("year") int year)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {

@@ -40,8 +40,8 @@ public class AnswerController {
 
     //    ---------- Answer ----------
 
-    @PostMapping("/create/{qid}")
-    public ResponseEntity<String> create(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid)
+    @PostMapping("/create/{qid}/{sessionCookie}")
+    public ResponseEntity<String> create(@PathVariable("sessionCookie") String ck, @PathVariable("qid") String qid)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -82,8 +82,8 @@ public class AnswerController {
         return ResponseEntity.ok(aadtl);
     }
 
-    @GetMapping("/getAnswerDTOByQidCk/{qid}")
-    public ResponseEntity<List<AnswerDTO>> getAnswerDTOByQidCk(@CookieValue("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getAnswerDTOByQidCk/{qid}/{sessionCookie}")
+    public ResponseEntity<List<AnswerDTO>> getAnswerDTOByQidCk(@PathVariable("sessionCookie") String ck, @PathVariable("qid") String qid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -120,8 +120,8 @@ public class AnswerController {
         return ResponseEntity.ok(la);
     }
 
-    @PutMapping("/acceptAnswer/{aid}")
-    public ResponseEntity<String> acceptAnswer(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
+    @PutMapping("/acceptAnswer/{aid}/{sessionCookie}")
+    public ResponseEntity<String> acceptAnswer(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -132,8 +132,8 @@ public class AnswerController {
         }
     }
 
-    @DeleteMapping("/deleteAnswer/{aid}")
-    public ResponseEntity<String> deleteAnswer(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteAnswer/{aid}/{sessionCookie}")
+    public ResponseEntity<String> deleteAnswer(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -159,8 +159,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getTotalAnswer")
-    public ResponseEntity<Integer> getTotalAnswer(@CookieValue("sessionCookie") String ck)
+    @GetMapping("/getTotalAnswer/{sessionCookie}")
+    public ResponseEntity<Integer> getTotalAnswer(@PathVariable("sessionCookie") String ck)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -177,8 +177,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getTotalAnswerYear/{year}")
-    public ResponseEntity<HashMap> getTotalAnswerYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+    @GetMapping("/getTotalAnswerYear/{year}/{sessionCookie}")
+    public ResponseEntity<HashMap> getTotalAnswerYear(@PathVariable("sessionCookie") String ck, @PathVariable("year") int year)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -197,8 +197,8 @@ public class AnswerController {
 
     //    ---------- Answer Detail ----------
 
-    @PostMapping("/createDetail/{aid}")
-    public ResponseEntity<String> createDetail(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody List<AnswerDetail> answerDetailList)
+    @PostMapping("/createDetail/{aid}/{sessionCookie}")
+    public ResponseEntity<String> createDetail(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody List<AnswerDetail> answerDetailList)
             throws ExecutionException, InterruptedException {
         if(answerDetailList.isEmpty()){
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Detail list empty");
@@ -220,8 +220,8 @@ public class AnswerController {
         }
     }
 
-    @PostMapping("/editDetail/{aid}")
-    public ResponseEntity<String> editDetail(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody List<AnswerDetail> answerDetailList)
+    @PostMapping("/editDetail/{aid}/{sessionCookie}")
+    public ResponseEntity<String> editDetail(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody List<AnswerDetail> answerDetailList)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(answerDetailList.isEmpty()){
@@ -258,8 +258,8 @@ public class AnswerController {
 
     //    ---------- Answer Vote ----------
 
-    @PostMapping("/castAnswerVoteUD/{aid}")
-    public ResponseEntity<String> castQuestionVoteUD(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody AnswerVote answerVote)
+    @PostMapping("/castAnswerVoteUD/{aid}/{sessionCookie}")
+    public ResponseEntity<String> castQuestionVoteUD(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody AnswerVote answerVote)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -279,8 +279,8 @@ public class AnswerController {
         return ResponseEntity.ok(String.valueOf(i));
     }
 
-    @GetMapping("/getUserVoteValue/{aid}")
-    public ResponseEntity<String> getUserVoteValue(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getUserVoteValue/{aid}/{sessionCookie}")
+    public ResponseEntity<String> getUserVoteValue(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -291,8 +291,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getTotalVote")
-    public ResponseEntity<Integer> getTotalVote(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @GetMapping("/getTotalVote/{sessionCookie}")
+    public ResponseEntity<Integer> getTotalVote(@PathVariable("sessionCookie") String ck) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -322,8 +322,8 @@ public class AnswerController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @PostMapping("/createActivityHistory/{aid}")
-    public ResponseEntity<String> createActivityHistory(@PathVariable("aid") String aid, @CookieValue("sessionCookie") String ck, @RequestBody AnswerActivityHistory answerActivityHistory)
+    @PostMapping("/createActivityHistory/{aid}/{sessionCookie}")
+    public ResponseEntity<String> createActivityHistory(@PathVariable("aid") String aid, @PathVariable("sessionCookie") String ck, @RequestBody AnswerActivityHistory answerActivityHistory)
             throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
@@ -340,8 +340,8 @@ public class AnswerController {
 
     //    ---------- Answer Report ----------
 
-    @PostMapping("/report/{aid}")
-    public ResponseEntity<String> report(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody AnswerReport report) throws ExecutionException, InterruptedException {
+    @PostMapping("/report/{aid}/{sessionCookie}")
+    public ResponseEntity<String> report(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid, @RequestBody AnswerReport report) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -362,8 +362,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getUserReportValue/{aid}")
-    public ResponseEntity<String> getUserReportValue(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
+    @GetMapping("/getUserReportValue/{aid}/{sessionCookie}")
+    public ResponseEntity<String> getUserReportValue(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -379,8 +379,8 @@ public class AnswerController {
         }
     }
 
-    @PutMapping("/editReport")
-    public ResponseEntity<String> editReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> arlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PutMapping("/editReport/{sessionCookie}")
+    public ResponseEntity<String> editReport(@PathVariable("sessionCookie") String ck, @RequestBody List<String> arlid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -402,8 +402,8 @@ public class AnswerController {
         }
     }
 
-    @DeleteMapping("/deleteReport/{raid}")
-    public ResponseEntity<String> deleteReport(@CookieValue("sessionCookie") String ck, @PathVariable("raid") String raid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteReport/{raid}/{sessionCookie}")
+    public ResponseEntity<String> deleteReport(@PathVariable("sessionCookie") String ck, @PathVariable("raid") String raid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -421,8 +421,8 @@ public class AnswerController {
         }
     }
 
-    @DeleteMapping("/deleteListReport")
-    public ResponseEntity<String> deleteListReport(@CookieValue("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @DeleteMapping("/deleteListReport/{sessionCookie}")
+    public ResponseEntity<String> deleteListReport(@PathVariable("sessionCookie") String ck, @RequestBody List<String> ids) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -442,8 +442,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getAnswerReport")
-    public ResponseEntity<List<AnswerReportDTO>> getAnswerReport(@CookieValue("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getAnswerReport/{sessionCookie}")
+    public ResponseEntity<List<AnswerReportDTO>> getAnswerReport(@PathVariable("sessionCookie") String ck) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -471,8 +471,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getReportByAid/{aid}")
-    public ResponseEntity<List<AnswerReportDTO>> getReportByAid(@CookieValue("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getReportByAid/{aid}/{sessionCookie}")
+    public ResponseEntity<List<AnswerReportDTO>> getReportByAid(@PathVariable("sessionCookie") String ck, @PathVariable("aid") String aid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -500,8 +500,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getUserReport/{uid}")
-    public ResponseEntity<?> getUserReport(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
+    @GetMapping("/getUserReport/{uid}/{sessionCookie}")
+    public ResponseEntity<?> getUserReport(@PathVariable("sessionCookie") String ck, @PathVariable("uid") String uid) throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -534,8 +534,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getTotalAnswerReport")
-    public ResponseEntity<Integer> getTotalAnswerReport(@CookieValue("sessionCookie") String ck)
+    @GetMapping("/getTotalAnswerReport/{sessionCookie}")
+    public ResponseEntity<Integer> getTotalAnswerReport(@PathVariable("sessionCookie") String ck)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {
@@ -552,8 +552,8 @@ public class AnswerController {
         }
     }
 
-    @GetMapping("/getTotalAnswerReportYear/{year}")
-    public ResponseEntity<HashMap> getTotalAnswerReportYear(@CookieValue("sessionCookie") String ck, @PathVariable("year") int year)
+    @GetMapping("/getTotalAnswerReportYear/{year}/{sessionCookie}")
+    public ResponseEntity<HashMap> getTotalAnswerReportYear(@PathVariable("sessionCookie") String ck, @PathVariable("year") int year)
             throws ExecutionException, InterruptedException, FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if (user.getUid() == null) {

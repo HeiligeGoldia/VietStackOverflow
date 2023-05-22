@@ -75,8 +75,8 @@ public class AccountController {
         return ResponseEntity.ok(s);
     }
 
-    @PostMapping("/verifySC")
-    public ResponseEntity<User> verifySC(@CookieValue("sessionCookie") String ck) {
+    @PostMapping("/verifySC/{sessionCookie}")
+    public ResponseEntity<User> verifySC(@PathVariable("sessionCookie") String ck) {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
@@ -84,8 +84,8 @@ public class AccountController {
         else return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/clearSessionCookieAndRevoke")
-    public ResponseEntity<String> clearSessionCookieAndRevoke(@CookieValue("sessionCookie") String ck){
+    @PostMapping("/clearSessionCookieAndRevoke/{sessionCookie}")
+    public ResponseEntity<String> clearSessionCookieAndRevoke(@PathVariable("sessionCookie") String ck){
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -98,8 +98,8 @@ public class AccountController {
 
     //    ---------- Admin ----------
 
-    @PostMapping("/admin/clearSessionCookieById/{uid}")
-    public ResponseEntity<String> clearSessionCookieById(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException {
+    @PostMapping("/admin/clearSessionCookieById/{uid}/{sessionCookie}")
+    public ResponseEntity<String> clearSessionCookieById(@PathVariable("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -116,8 +116,8 @@ public class AccountController {
         }
     }
 
-    @PostMapping("/admin/adminClaim/{uid}")
-    public ResponseEntity<String> adminClaim(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PostMapping("/admin/adminClaim/{uid}/{sessionCookie}")
+    public ResponseEntity<String> adminClaim(@PathVariable("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
@@ -138,8 +138,8 @@ public class AccountController {
         }
     }
 
-    @PostMapping("/admin/userClaim/{uid}")
-    public ResponseEntity<String> userClaim(@CookieValue("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
+    @PostMapping("/admin/userClaim/{uid}/{sessionCookie}")
+    public ResponseEntity<String> userClaim(@PathVariable("sessionCookie") String ck, @PathVariable("uid") String uid) throws FirebaseAuthException, ExecutionException, InterruptedException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");
