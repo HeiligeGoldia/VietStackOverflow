@@ -44,7 +44,7 @@ public class SimpleCORSFilter implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/*")
-                .allowedOrigins("")
+                .allowedOriginPatterns("")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("Origin", "Accept", "Content-Type", "Authorization")
                 .allowCredentials(true);
