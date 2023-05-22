@@ -49,7 +49,8 @@ public class VietstackApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**").allowedOrigins("http://localhost:3000")
-						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE");
+						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE")
+						.allowedHeaders("Content-Type", "Accept", "X-Requested-With", "remember-me", "Cookie");
 			}
 		};
 	}
