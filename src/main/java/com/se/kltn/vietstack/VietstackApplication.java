@@ -15,10 +15,6 @@ public class VietstackApplication {
 
 	public static void main(String[] args) throws IOException {
 
-//		ClassLoader classLoader = VietstackApplication.class.getClassLoader();
-//		File file = new File((classLoader.getResource("vietstack-kltn2023-firebase-adminsdk.json")).getFile());
-//		FileInputStream firebase_serv = new FileInputStream(file.getAbsolutePath());
-
 		URL url = new URL("https://drive.google.com/uc?export=download&id=17CRc3fe7UczVpjEo3uLesbtLpQ3B-GTW");
 		URLConnection connection = url.openConnection();
 		InputStream firebase_serv = connection.getInputStream();
