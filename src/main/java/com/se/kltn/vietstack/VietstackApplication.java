@@ -48,7 +48,7 @@ public class VietstackApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("https://dobakien.github.io/DoAnTotNghiep/")
+				registry.addMapping("/**").allowedOrigins("https://dobakien.github.io")
 						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE")
 						.allowedHeaders("Content-Type", "Accept", "X-Requested-With", "remember-me", "Cookie");
 			}
