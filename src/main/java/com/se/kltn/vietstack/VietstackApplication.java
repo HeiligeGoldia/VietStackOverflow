@@ -43,16 +43,16 @@ public class VietstackApplication {
 		SpringApplication.run(VietstackApplication.class, args);
 	}
 
-//	@Bean
-//	public WebMvcConfigurer corsConfigurer() {
-//		return new WebMvcConfigurer() {
-//			@Override
-//			public void addCorsMappings(CorsRegistry registry) {
-//				registry.addMapping("/**").allowedOrigins("http://localhost:3000")
-//						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE")
-//						.allowedHeaders("Content-Type", "Accept", "X-Requested-With", "remember-me", "Cookie");
-//			}
-//		};
-//	}
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowedOrigins("http://localhost:3000")
+						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE")
+						.allowedHeaders("Content-Type", "Accept", "X-Requested-With", "remember-me", "Cookie");
+			}
+		};
+	}
 
 }

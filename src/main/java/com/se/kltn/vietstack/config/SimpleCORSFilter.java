@@ -1,5 +1,5 @@
-package com.se.kltn.vietstack.config;
-
+//package com.se.kltn.vietstack.config;
+//
 //import jakarta.servlet.*;
 //import jakarta.servlet.http.HttpServletRequest;
 //import jakarta.servlet.http.HttpServletResponse;
@@ -34,16 +34,3 @@ package com.se.kltn.vietstack.config;
 //    }
 //
 //}
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class SimpleCORSFilter implements WebMvcConfigurer {
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedMethods("*").allowedHeaders("*");
-    }
-}
