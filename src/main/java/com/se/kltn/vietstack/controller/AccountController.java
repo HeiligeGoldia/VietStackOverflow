@@ -23,8 +23,8 @@ public class AccountController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/getUserClaims")
-    public ResponseEntity<String> getUserClaims(@CookieValue("sessionCookie") String ck) throws FirebaseAuthException {
+    @GetMapping("/getUserClaims/{sessionCookie}")
+    public ResponseEntity<String> getUserClaims(@PathVariable("sessionCookie") String ck) throws FirebaseAuthException {
         User user = accountService.verifySC(ck);
         if(user.getUid()==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorize failed");

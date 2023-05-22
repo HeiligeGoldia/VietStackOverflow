@@ -5,10 +5,6 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.*;
 import java.net.URL;
@@ -41,18 +37,6 @@ public class VietstackApplication {
 		FirebaseApp.initializeApp(options);
 
 		SpringApplication.run(VietstackApplication.class, args);
-	}
-
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("https://dobakien.github.io")
-						.allowCredentials(true).allowedMethods("POST", "GET", "OPTIONS", "DELETE")
-						.allowedHeaders("Content-Type", "Accept", "X-Requested-With", "remember-me", "Cookie");
-			}
-		};
 	}
 
 }
