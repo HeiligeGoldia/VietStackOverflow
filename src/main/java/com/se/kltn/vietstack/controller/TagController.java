@@ -5,6 +5,7 @@ import com.se.kltn.vietstack.model.tag.Tag;
 import com.se.kltn.vietstack.model.user.User;
 import com.se.kltn.vietstack.service.AccountService;
 import com.se.kltn.vietstack.service.TagService;
+import com.se.kltn.vietstack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ public class TagController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/getAllTag")
     public ResponseEntity<List<Tag>> getAllTag() throws ExecutionException, InterruptedException {
@@ -113,6 +117,7 @@ public class TagController {
                 return ResponseEntity.ok("Access denied");
             } else {
                 if(tagService.checkTag(tid)) {
+                    userService.removeFollowTagByTid(tid);
                     String s =tagService.deleteTag(tid);
                     return ResponseEntity.ok(s);
                 }

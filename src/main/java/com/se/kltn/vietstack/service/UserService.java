@@ -160,6 +160,27 @@ public class UserService {
         return sl;
     }
 
+    public List<Save> getSaveByQid(String qid) throws ExecutionException, InterruptedException {
+        List<Save> sl = new ArrayList<>();
+        CollectionReference ref = db.collection("Save");
+        Query query = ref.whereEqualTo("qid", qid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        for(QueryDocumentSnapshot ds : docs) {
+            sl.add(ds.toObject(Save.class));
+        }
+        return sl;
+    }
+
+    public String removeSaveByQid(String qid) throws ExecutionException, InterruptedException {
+        List<Save> ids = getSaveByQid(qid);
+        for (Save s : ids) {
+            removeSavedQuestion(s);
+        }
+        return "All save removed";
+    }
+
     //    ---------- Follow Tag ----------
 
     public String getLastTfid() throws ExecutionException, InterruptedException {
@@ -188,6 +209,19 @@ public class UserService {
         ApiFuture<WriteResult> api = db.collection("FollowTag").document(tag.getTfid()).set(tag);
         api.get();
         return tag.getTfid();
+    }
+
+    public List<FollowTag> getFollowTagByTid(String tid) throws ExecutionException, InterruptedException {
+        List<FollowTag> ftl = new ArrayList<>();
+        CollectionReference ref = db.collection("FollowTag");
+        Query query = ref.whereEqualTo("tid", tid);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
+
+        for (QueryDocumentSnapshot d : docs) {
+            ftl.add(d.toObject(FollowTag.class));
+        }
+        return ftl;
     }
 
     public List<FollowTag> getFollowTagByUid(String uid) throws ExecutionException, InterruptedException {
@@ -238,6 +272,14 @@ public class UserService {
         ApiFuture<WriteResult> writeResult = db.collection("FollowTag").document(followTag.getTfid()).delete();
         writeResult.get();
         return "Tag removed";
+    }
+
+    public String removeFollowTagByTid(String tid) throws ExecutionException, InterruptedException {
+        List<FollowTag> ids = getFollowTagByTid(tid);
+        for (FollowTag ft : ids) {
+            removeFollowTag(ft);
+        }
+        return "All follow removed";
     }
 
 }

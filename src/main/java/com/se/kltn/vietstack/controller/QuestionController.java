@@ -403,6 +403,9 @@ public class QuestionController {
                 questionService.removeQuestionVoteByQid(qid);
                 questionService.removeAllDetailByQid(qid);
                 questionService.removeTagsByQid(qid);
+
+                userService.removeSaveByQid(qid);
+
                 String s = questionService.delete(qid);
 
                 return ResponseEntity.ok(s);
