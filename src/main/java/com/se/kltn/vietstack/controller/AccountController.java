@@ -36,10 +36,15 @@ public class AccountController {
 
     @PostMapping("/dangky")
     public ResponseEntity<String> dangky(@RequestBody User user) throws ExecutionException, InterruptedException, FirebaseAuthException {
-        user.setRole("User");
-        userService.create(user);
-        accountService.userClaim(user.getUid());
-        return ResponseEntity.ok(user.getUid());
+        if(userService.checkEmail(user.getEmail())){
+            user.setRole("User");
+            userService.create(user);
+            accountService.userClaim(user.getUid());
+            return ResponseEntity.ok(user.getUid());
+        }
+        else {
+            return ResponseEntity.ok("Email already in use");
+        }
     }
 
     @PostMapping("/register")
