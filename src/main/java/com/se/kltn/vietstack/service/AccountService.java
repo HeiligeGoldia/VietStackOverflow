@@ -46,7 +46,7 @@ public class AccountService {
     }
 
     public String register1(String email) throws FirebaseAuthException {
-        Twilio.init("AC96e6a911a4dbdeb1ba8e7d5aaabedd76", "a46fcbb8d7640d91183e38d5e8e0a73d");
+        Twilio.init("AC96e6a911a4dbdeb1ba8e7d5aaabedd76", "381b33be411e99b13013a1e426a3b750");
         Verification verification = Verification.creator(
                         "VA9a5636ec411f18ae4d68159a9c9518e9",
                 email,"email").create();
