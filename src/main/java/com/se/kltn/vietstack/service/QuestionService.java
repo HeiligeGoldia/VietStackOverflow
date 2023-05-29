@@ -59,7 +59,7 @@ public class QuestionService {
         List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
             Question qs = ds.toObject(Question.class);
-            if(qs.getTitle().contains(input)){
+            if(qs.getTitle().toLowerCase().contains(input.toLowerCase())){
                 docId.add(Integer.parseInt(qs.getQid()));
             }
         }
@@ -75,7 +75,7 @@ public class QuestionService {
         List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
             QuestionDetail qd = ds.toObject(QuestionDetail.class);
-            if(qd.getContent().contains(input)){
+            if(qd.getContent().toLowerCase().contains(input.toLowerCase())){
                 if(!docId.contains(qd.getQid())){
                     docId.add(Integer.parseInt(qd.getQid()));
 //                    System.out.println(qd);

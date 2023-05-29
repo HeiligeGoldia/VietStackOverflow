@@ -81,7 +81,7 @@ public class  AnswerService {
         List<Integer> docId = new ArrayList<>();
         for(QueryDocumentSnapshot ds : docs) {
             AnswerDetail ad = ds.toObject(AnswerDetail.class);
-            if(ad.getContent().contains(input)){
+            if(ad.getContent().toLowerCase().contains(input.toLowerCase())){
                 Answer a = getAnswerByAid(ad.getAid());
                 if(!docId.contains(a.getQid())){
                     docId.add(Integer.parseInt(a.getQid()));
