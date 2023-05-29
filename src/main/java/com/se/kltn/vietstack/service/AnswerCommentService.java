@@ -3,22 +3,22 @@ package com.se.kltn.vietstack.service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import com.se.kltn.vietstack.model.comment.Comment;
-import com.se.kltn.vietstack.model.comment.CommentReport;
+import com.se.kltn.vietstack.model.comment.AnswerComment;
+import com.se.kltn.vietstack.model.comment.AnswerCommentReport;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class CommentService {
+public class AnswerCommentService {
 
     Firestore db = FirestoreClient.getFirestore();
 
-    //    ---------- Comment ----------
+    //    ---------- Answer Comment ----------
 
-    public String getLastCid() throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("Comment");
+    public String getLastCaid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerComment");
         ApiFuture<QuerySnapshot> api = ref.get();
         QuerySnapshot doc = api.get();
         List<QueryDocumentSnapshot> docs = doc.getDocuments();
@@ -35,36 +35,36 @@ public class CommentService {
         }
     }
 
-    public Comment getCommentByCid(String cid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("Comment");
-        Query query = ref.whereEqualTo("cid", cid);
+    public AnswerComment getAnswerCommentByCaid(String caid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerComment");
+        Query query = ref.whereEqualTo("caid", caid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         for(QueryDocumentSnapshot ds : docs){
-            return ds.toObject(Comment.class);
+            return ds.toObject(AnswerComment.class);
         }
-        return new Comment();
+        return new AnswerComment();
     }
 
-    public String createComment(Comment comment) throws ExecutionException, InterruptedException {
-        int newCid = Integer.parseInt(getLastCid()) + 1;
-        String cid = String.valueOf(newCid);
-        comment.setCid(cid);
-        ApiFuture<WriteResult> api = db.collection("Comment").document(comment.getCid()).set(comment);
+    public String createAnswerComment(AnswerComment answerComment) throws ExecutionException, InterruptedException {
+        int newCaid = Integer.parseInt(getLastCaid()) + 1;
+        String caid = String.valueOf(newCaid);
+        answerComment.setCaid(caid);
+        ApiFuture<WriteResult> api = db.collection("AnswerComment").document(answerComment.getCaid()).set(answerComment);
         api.get();
-        return comment.getCid();
+        return answerComment.getCaid();
     }
 
-    public String editComment(Comment comment) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> api = db.collection("Comment").document(comment.getCid()).set(comment);
+    public String editAnswerComment(AnswerComment answerComment) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("AnswerComment").document(answerComment.getCaid()).set(answerComment);
         api.get();
-        return comment.getCid();
+        return answerComment.getCaid();
     }
 
-    public List<Comment> getCommentByQid(String qid) throws ExecutionException, InterruptedException {
-        List<Comment> cl = new ArrayList<>();
-        CollectionReference ref = db.collection("Comment");
-        Query query = ref.whereEqualTo("qid", qid);
+    public List<AnswerComment> getAnswerCommentByAid(String aid) throws ExecutionException, InterruptedException {
+        List<AnswerComment> cl = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerComment");
+        Query query = ref.whereEqualTo("aid", aid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
 
@@ -75,14 +75,14 @@ public class CommentService {
         Collections.sort(docId);
 
         for(Integer i : docId) {
-            cl.add(ref.document(String.valueOf(i)).get().get().toObject(Comment.class));
+            cl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerComment.class));
         }
         return cl;
     }
 
-    public String deleteComment(String cid){
+    public String deleteAnswerComment(String caid){
         try{
-            ApiFuture<WriteResult> writeResult = db.collection("Comment").document(cid).delete();
+            ApiFuture<WriteResult> writeResult = db.collection("AnswerComment").document(caid).delete();
             writeResult.get();
             return "Comment deleted";
         } catch (ExecutionException e) {
@@ -92,15 +92,15 @@ public class CommentService {
         }
     }
 
-    public int getSlCommentTotal() throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("Comment");
-        Query query = ref.whereNotEqualTo("cid", "0");
+    public int getSlAnswerCommentTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerComment");
+        Query query = ref.whereNotEqualTo("caid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         return docs.size();
     }
 
-    public int getSlCommentInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+    public int getSlAnswerCommentInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
         Calendar calendar = Calendar.getInstance();
 
         calendar.set(Calendar.YEAR, year);
@@ -113,7 +113,7 @@ public class CommentService {
         calendar.set(Calendar.DAY_OF_MONTH, lastDay);
         Date dateEnd = calendar.getTime();
 
-        CollectionReference ref = db.collection("Comment");
+        CollectionReference ref = db.collection("AnswerComment");
         Query query = ref
                 .whereGreaterThanOrEqualTo("date", dateBegin)
                 .whereLessThanOrEqualTo("date", dateEnd);
@@ -122,19 +122,19 @@ public class CommentService {
         return docs.size();
     }
 
-    public HashMap getSlCommentInYear(int year) throws ExecutionException, InterruptedException {
+    public HashMap getSlAnswerCommentInYear(int year) throws ExecutionException, InterruptedException {
         HashMap qiy = new HashMap();
         for(int i = 1; i <= 12; i++) {
-            int slq = getSlCommentInMonthYear(i, year);
+            int slq = getSlAnswerCommentInMonthYear(i, year);
             qiy.put(i, slq);
         }
         return qiy;
     }
 
-    //    ---------- Comment Report ----------
+    //    ---------- Answer Comment Report ----------
 
-    public String getLastRcid() throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("CommentReport");
+    public String getLastRcaid() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerCommentReport");
         ApiFuture<QuerySnapshot> api = ref.get();
         QuerySnapshot doc = api.get();
         List<QueryDocumentSnapshot> docs = doc.getDocuments();
@@ -151,49 +151,49 @@ public class CommentService {
         }
     }
 
-    public CommentReport getReportByUidCid(String uid, String cid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("cid", cid);
+    public AnswerCommentReport getReportByUidCaid(String uid, String caid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerCommentReport");
+        Query query = ref.whereEqualTo("uid", uid).whereEqualTo("caid", caid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         for(QueryDocumentSnapshot ds : docs){
-            return ds.toObject(CommentReport.class);
+            return ds.toObject(AnswerCommentReport.class);
         }
-        return new CommentReport();
+        return new AnswerCommentReport();
     }
 
-    public CommentReport getReportByRcid(String rcid) throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereEqualTo("rcid", rcid);
+    public AnswerCommentReport getReportByRcaid(String rcaid) throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerCommentReport");
+        Query query = ref.whereEqualTo("rcaid", rcaid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         for(QueryDocumentSnapshot ds : docs){
-            return ds.toObject(CommentReport.class);
+            return ds.toObject(AnswerCommentReport.class);
         }
-        return new CommentReport();
+        return new AnswerCommentReport();
     }
 
-    public String report(CommentReport commentReport) throws ExecutionException, InterruptedException {
-        CommentReport cr = getReportByUidCid(commentReport.getUid(), commentReport.getCid());
-        if(cr.getRcid()==null){
-            int newRcid = Integer.parseInt(getLastRcid()) + 1;
+    public String report(AnswerCommentReport answerCommentReport) throws ExecutionException, InterruptedException {
+        AnswerCommentReport cr = getReportByUidCaid(answerCommentReport.getUid(), answerCommentReport.getCaid());
+        if(cr.getRcaid()==null){
+            int newRcid = Integer.parseInt(getLastRcaid()) + 1;
             String rcid = String.valueOf(newRcid);
-            commentReport.setRcid(rcid);
+            answerCommentReport.setRcaid(rcid);
 
-            ApiFuture<WriteResult> api = db.collection("CommentReport").document(commentReport.getRcid()).set(commentReport);
+            ApiFuture<WriteResult> api = db.collection("AnswerCommentReport").document(answerCommentReport.getRcaid()).set(answerCommentReport);
             api.get();
-            return commentReport.getRcid();
+            return answerCommentReport.getRcaid();
         }
         else {
             return "Already reported";
         }
     }
 
-    public List<CommentReport> getCommentReport() throws ExecutionException, InterruptedException {
-        List<CommentReport> crl = new ArrayList<>();
+    public List<AnswerCommentReport> getAnswerCommentReport() throws ExecutionException, InterruptedException {
+        List<AnswerCommentReport> crl = new ArrayList<>();
         List<Integer> docId = new ArrayList<>();
-        CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereNotEqualTo("rcid", "0");
+        CollectionReference ref = db.collection("AnswerCommentReport");
+        Query query = ref.whereNotEqualTo("rcaid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         if(docs.isEmpty()){
@@ -205,15 +205,15 @@ public class CommentService {
             }
             Collections.sort(docId);
             for(Integer i : docId) {
-                crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
+                crl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerCommentReport.class));
             }
             return crl;
         }
     }
 
-    public List<CommentReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
-        List<CommentReport> crl = new ArrayList<>();
-        CollectionReference ref = db.collection("CommentReport");
+    public List<AnswerCommentReport> getUserReport(String uid) throws ExecutionException, InterruptedException {
+        List<AnswerCommentReport> crl = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerCommentReport");
         Query query = ref.whereEqualTo("uid", uid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
@@ -225,15 +225,15 @@ public class CommentService {
         Collections.sort(docId);
 
         for(Integer i : docId) {
-            crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
+            crl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerCommentReport.class));
         }
         return crl;
     }
 
-    public List<CommentReport> getReportByCid(String cid) throws ExecutionException, InterruptedException {
-        List<CommentReport> crl = new ArrayList<>();
-        CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereEqualTo("cid", cid);
+    public List<AnswerCommentReport> getReportByCaid(String caid) throws ExecutionException, InterruptedException {
+        List<AnswerCommentReport> crl = new ArrayList<>();
+        CollectionReference ref = db.collection("AnswerCommentReport");
+        Query query = ref.whereEqualTo("caid", caid);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
 
@@ -244,21 +244,21 @@ public class CommentService {
         Collections.sort(docId, Collections.reverseOrder());
 
         for(Integer i : docId) {
-            crl.add(ref.document(String.valueOf(i)).get().get().toObject(CommentReport.class));
+            crl.add(ref.document(String.valueOf(i)).get().get().toObject(AnswerCommentReport.class));
         }
 
         return crl;
     }
 
-    public String editReport(CommentReport commentReport) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> api = db.collection("CommentReport").document(commentReport.getRcid()).set(commentReport);
+    public String editReport(AnswerCommentReport answerCommentReport) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> api = db.collection("AnswerCommentReport").document(answerCommentReport.getRcaid()).set(answerCommentReport);
         api.get();
-        return commentReport.getRcid();
+        return answerCommentReport.getRcaid();
     }
 
-    public String deleteReport(String rcid) {
+    public String deleteReport(String rcaid) {
         try{
-            ApiFuture<WriteResult> writeResult = db.collection("CommentReport").document(rcid).delete();
+            ApiFuture<WriteResult> writeResult = db.collection("AnswerCommentReport").document(rcaid).delete();
             writeResult.get();
             return "Report deleted";
         } catch (ExecutionException e) {
@@ -268,15 +268,15 @@ public class CommentService {
         }
     }
 
-    public int getSlCommentReportTotal() throws ExecutionException, InterruptedException {
-        CollectionReference ref = db.collection("CommentReport");
-        Query query = ref.whereNotEqualTo("rcid", "0");
+    public int getSlAnswerCommentReportTotal() throws ExecutionException, InterruptedException {
+        CollectionReference ref = db.collection("AnswerCommentReport");
+        Query query = ref.whereNotEqualTo("rcaid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         return docs.size();
     }
 
-    public int getSlCommentReportInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
+    public int getSlAnswerCommentReportInMonthYear(int month, int year) throws ExecutionException, InterruptedException {
         Calendar calendar = Calendar.getInstance();
 
         calendar.set(Calendar.YEAR, year);
@@ -289,7 +289,7 @@ public class CommentService {
         calendar.set(Calendar.DAY_OF_MONTH, lastDay);
         Date dateEnd = calendar.getTime();
 
-        CollectionReference ref = db.collection("CommentReport");
+        CollectionReference ref = db.collection("AnswerCommentReport");
         Query query = ref
                 .whereGreaterThanOrEqualTo("date", dateBegin)
                 .whereLessThanOrEqualTo("date", dateEnd);
@@ -298,10 +298,10 @@ public class CommentService {
         return docs.size();
     }
 
-    public HashMap getSlCommentReportInYear(int year) throws ExecutionException, InterruptedException {
+    public HashMap getSlAnswerCommentReportInYear(int year) throws ExecutionException, InterruptedException {
         HashMap qiy = new HashMap();
         for(int i = 1; i <= 12; i++) {
-            int slq = getSlCommentReportInMonthYear(i, year);
+            int slq = getSlAnswerCommentReportInMonthYear(i, year);
             qiy.put(i, slq);
         }
         return qiy;

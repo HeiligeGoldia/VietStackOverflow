@@ -2,15 +2,14 @@ package com.se.kltn.vietstack.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.answer.*;
+import com.se.kltn.vietstack.model.comment.AnswerComment;
+import com.se.kltn.vietstack.model.comment.AnswerCommentReport;
 import com.se.kltn.vietstack.model.dto.AnswerActivityHistoryDTO;
 import com.se.kltn.vietstack.model.dto.AnswerDTO;
 import com.se.kltn.vietstack.model.dto.AnswerReportDTO;
 import com.se.kltn.vietstack.model.question.Question;
 import com.se.kltn.vietstack.model.user.User;
-import com.se.kltn.vietstack.service.AccountService;
-import com.se.kltn.vietstack.service.AnswerService;
-import com.se.kltn.vietstack.service.QuestionService;
-import com.se.kltn.vietstack.service.UserService;
+import com.se.kltn.vietstack.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +27,9 @@ public class AnswerController {
 
     @Autowired
     private AnswerService answerService;
+
+    @Autowired
+    private AnswerCommentService answerCommentService;
 
     @Autowired
     private AccountService accountService;
@@ -71,12 +73,14 @@ public class AnswerController {
         for(Answer a : la){
             AnswerDTO dto = new AnswerDTO();
             List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
+            List<AnswerComment> acl = answerCommentService.getAnswerCommentByAid(a.getAid());
             int av = answerService.getTotalVoteValue(a.getAid());
             User u = userService.findByUid(a.getUid());
             dto.setAnswerVote(av);
             dto.setUser(u);
             dto.setAnswer(a);
             dto.setAnswerDetails(adl);
+            dto.setAnswerComments(acl);
             aadtl.add(dto);
         }
         return ResponseEntity.ok(aadtl);
@@ -94,6 +98,7 @@ public class AnswerController {
             for(Answer a : la){
                 AnswerDTO dto = new AnswerDTO();
                 List<AnswerDetail> adl = answerService.getAnswerDetailByAid(a.getAid());
+                List<AnswerComment> acl = answerCommentService.getAnswerCommentByAid(a.getAid());
                 int av = answerService.getTotalVoteValue(a.getAid());
                 User u = userService.findByUid(a.getUid());
                 String vv = answerService.getUserVoteValue(user.getUid(), a.getAid());
@@ -101,6 +106,7 @@ public class AnswerController {
                 dto.setUser(u);
                 dto.setAnswer(a);
                 dto.setAnswerDetails(adl);
+                dto.setAnswerComments(acl);
                 dto.setVoteValue(vv);
                 aadtl.add(dto);
             }
@@ -150,6 +156,18 @@ public class AnswerController {
                     ar.setStatus("Đã xoá");
                     answerService.editReport(ar);
                 }
+
+                List<AnswerComment> acl = answerCommentService.getAnswerCommentByAid(aid);
+                for(AnswerComment ac : acl) {
+                    List<AnswerCommentReport> acrl = answerCommentService.getReportByCaid(ac.getCaid());
+                    for(AnswerCommentReport acr : acrl) {
+                        acr.setCaid("Bình luận đã bị xoá");
+                        acr.setStatus("Đã xoá");
+                        answerCommentService.editReport(acr);
+                    }
+                    answerCommentService.deleteAnswerComment(ac.getCaid());
+                }
+
                 answerService.deleteHistoryByAid(aid);
                 answerService.removeAnswerVoteByAid(aid);
                 answerService.removeAllDetailByAid(aid);

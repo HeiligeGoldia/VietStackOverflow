@@ -230,7 +230,7 @@ public class  AnswerService {
 
     public int getSlAnswerTotal() throws ExecutionException, InterruptedException {
         CollectionReference ref = db.collection("Answer");
-        Query query = ref.whereNotEqualTo("raid", "0");
+        Query query = ref.whereNotEqualTo("aid", "0");
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> docs = querySnapshot.get().getDocuments();
         return docs.size();

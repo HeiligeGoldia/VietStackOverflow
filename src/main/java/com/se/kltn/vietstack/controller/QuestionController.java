@@ -3,6 +3,8 @@ package com.se.kltn.vietstack.controller;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.se.kltn.vietstack.model.answer.Answer;
 import com.se.kltn.vietstack.model.answer.AnswerReport;
+import com.se.kltn.vietstack.model.comment.AnswerComment;
+import com.se.kltn.vietstack.model.comment.AnswerCommentReport;
 import com.se.kltn.vietstack.model.comment.Comment;
 import com.se.kltn.vietstack.model.comment.CommentReport;
 import com.se.kltn.vietstack.model.dto.QuestionActivityHistoryDTO;
@@ -33,6 +35,9 @@ public class QuestionController {
 
     @Autowired
     private CommentService commentService;
+
+    @Autowired
+    private AnswerCommentService answerCommentService;
 
     @Autowired
     private TagService tagService;
@@ -375,6 +380,16 @@ public class QuestionController {
                         ar.setAid("Câu trả lời đã bị xoá");
                         ar.setStatus("Đã xoá");
                         answerService.editReport(ar);
+                    }
+                    List<AnswerComment> acl = answerCommentService.getAnswerCommentByAid(a.getAid());
+                    for(AnswerComment ac : acl) {
+                        List<AnswerCommentReport> acrl = answerCommentService.getReportByCaid(ac.getCaid());
+                        for(AnswerCommentReport acr : acrl) {
+                            acr.setCaid("Bình luận đã bị xoá");
+                            acr.setStatus("Đã xoá");
+                            answerCommentService.editReport(acr);
+                        }
+                        answerCommentService.deleteAnswerComment(ac.getCaid());
                     }
                     answerService.deleteHistoryByAid(a.getAid());
                     answerService.removeAnswerVoteByAid(a.getAid());
